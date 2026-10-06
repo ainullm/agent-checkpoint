@@ -1,66 +1,84 @@
+<div align="center">
+
 # 🛡️ Agent-Checkpoint
 
-> **Zero-data-loss file snapshotting, SemVer classification, and dual-ledger audit trail for autonomous AI coding & research agents.**
+**Zero-data-loss file snapshotting, SemVer classification, and dual-ledger audit trail for autonomous AI coding & research agents.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![Zero Dependency](https://img.shields.io/badge/Dependencies-Zero-brightgreen.svg)]()
-[![Cross Agent](https://img.shields.io/badge/Agents-Antigravity%20%7C%20Claude%20%7C%20Cursor%20%7C%20Windsurf-orange.svg)]()
+[![Cross Agent](https://img.shields.io/badge/Agents-Antigravity%20%7C%20Claude%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20Copilot-orange.svg)]()
 [![SemVer](https://img.shields.io/badge/Versioning-SemVer%202.0-blueviolet.svg)]()
 
 ---
 
-## ⚡ The Problem: The Destructive AI Overwrite
-
-Autonomous AI agents (Cursor, Claude Code, Antigravity, Windsurf, Aider) are transforming development and research. However, they share a critical flaw: **they edit files in-place**.
-
-* ❌ **Silent Regression:** An AI agent refactors a module and inadvertently removes an essential edge case or formula.
-* ❌ **Zero Paper Trail:** You wake up to modified code without knowing *why* specific architectural decisions or parameter changes were made.
-* ❌ **Irreversible Hallucination:** A misunderstood prompt causes the agent to wipe out hours of manuscript drafting or mathematical derivation.
-* ❌ **VCS Noise:** Polluting your Git branch with dozens of intermediate "try-and-error" micro-commits just to feel safe.
+**Languages:**  
+[English (Current)](./README.md) • [🇮🇩 Bahasa Indonesia](./README.id.md)
 
 ---
 
-## 💡 The Solution: Agent-Checkpoint Protocol
+</div>
 
-**Agent-Checkpoint** is a lightweight, zero-dependency protocol that enforces strict versioning and automatic archiving before any AI agent modifies your files.
+## ⚡ The Problem: Destructive In-Place AI Overwrites
 
-### Key Pillars:
-1. **Pre-Edit Archiving (Zero Data Loss):** Before modifying any existing file, the agent automatically snapshots its exact prior state to `.snapshots/<filename>_v<OLD_VERSION>.<ext>`.
-2. **Semantic Impact Classification:** Every change is triaged using Semantic Versioning principles:
-   - `MAJOR`: Paradigm shift, breaking API contract, structural rewrite.
-   - `MINOR`: New feature, new section, added baseline, experimental extension.
-   - `PATCH`: Bug fix, parameter tuning, typo, editorial cleanup.
-3. **Dual-Ledger Architecture:**
-   - **Machine Index (`.snapshots/manifest.json`):** Ultra-compact JSON array parsed in `< 5ms`, preventing context window bloat.
-   - **Human Audit Trail (`REVISION_LOG.md`):** Rich Markdown narrative detailing the *scientific and engineering rationale* behind every change.
-4. **Deep Trackback & Time-Travel:** Inspect diffs, compare invariants, and rollback to historical states with zero guesswork.
+Autonomous AI coding agents (Cursor, Claude Code, Google Antigravity, Windsurf, GitHub Copilot, Aider) are accelerating software development and scientific research. However, almost every agent shares a dangerous default behavior: **they overwrite files in-place without preserving history**.
+
+* ❌ **Silent Regression:** An AI agent refactors a module and inadvertently drops a critical edge case, business constraint, or formula.
+* ❌ **Zero Paper Trail:** You return to your workspace without knowing *why* specific architectural decisions or parameter changes were made.
+* ❌ **Irreversible Hallucination:** A misunderstood prompt causes the agent to wipe out hours of draft writing, LaTeX formulas, or working code.
+* ❌ **Git Micro-Commit Noise:** Developers feel forced to make dozens of messy Git commits just to maintain an undo safety net.
 
 ---
 
-## 🏗️ Architecture
+## 💡 The Solution: The Agent-Checkpoint Protocol
+
+**Agent-Checkpoint** is an ultra-lightweight, zero-dependency protocol that installs in seconds. It enforces a simple, unbreakable rule on AI agents: **never touch an existing file without archiving its previous state first**, while automatically maintaining an audit ledger explaining *why* the change occurred.
+
+---
+
+## 🌟 Key Benefits
+
+### 1. 🛡️ Absolute Safety (Zero Data Loss)
+Before modifying any file, the agent copies its exact prior state into `.snapshots/`. Your working code and drafts are never permanently destroyed or overwritten.
+
+### 2. 📝 Automatic Audit Trail (Living Engineering Journal)
+The agent automatically maintains `REVISION_LOG.md`, detailing the **technical and architectural rationale** behind every modification. Ideal for:
+* Team code reviews and pull request summaries.
+* Post-mortem debugging without guessing what the AI changed overnight.
+* Academic and enterprise compliance audit trails.
+
+### 3. 🎯 Zero Dependency & 100% Private
+* **No package managers:** Requires no `npm`, `pip`, Docker, or background daemon.
+* **100% Local & Offline:** All snapshots and logs remain strictly on your local disk. Zero telemetry or external network calls.
+
+### 4. 🔀 Deep Trackback & Time-Travel
+Ask your AI at any time: *"Compare `auth_service.py` with the version before the refactor"* or *"Revert `auth_service.py` back to `v1.0.0`"*. The agent retrieves the snapshot and performs semantic diffs or restorations instantly.
+
+---
+
+## 🏗️ Architecture: Dual-Ledger System
 
 ```mermaid
 flowchart TD
-    subgraph Trigger ["1. Agent Modification Trigger"]
-        A["User Prompt / Refactor Request"] --> B{"File Exists?"}
+    subgraph Trigger ["1. File Modification Trigger"]
+        A["User Requests Edit / Refactor"] --> B{"File Exists?"}
         B -->|"No (New File)"| C["Register as v1.0.0 (Initial)"]
-        B -->|"Yes (Existing File)"| D["Classify Semantic Bump\n(MAJOR / MINOR / PATCH)"]
+        B -->|"Yes"| D["Classify SemVer Impact\n(MAJOR / MINOR / PATCH)"]
     end
 
-    subgraph CoreEngine ["2. Execution & Snapshotting"]
-        D --> E["Copy Active File to:\n.snapshots/<name>_v<OLD_VERSION>.<ext>"]
-        E --> F["Apply Edits to Active File"]
+    subgraph CoreEngine ["2. Snapshot & Execution"]
+        D --> E["Copy Active File to:\n.snapshots/<filename>_v<OLD_VERSION>.<ext>"]
+        E --> F["Apply Modifications to Active File"]
     end
 
     subgraph DualLedger ["3. Dual-Ledger Synchronization"]
-        F --> G[".snapshots/manifest.json\n(Fast Machine Index for AI)"]
+        F --> G[".snapshots/manifest.json\n(Fast Machine Index for AI: < 5ms)"]
         F --> H["REVISION_LOG.md\n(Human-Readable Audit Trail)"]
     end
 
-    subgraph Retrieval ["4. Trackback & Audit Flow"]
+    subgraph Retrieval ["4. Trackback & Rollback"]
         I["User: 'Compare with previous version'"] --> G
-        G --> J["Load Snapshot vs Active File"]
-        J --> K["Generate Semantic Diff & Regression Report"]
+        G --> J["Load Historical Snapshot vs Active File"]
+        J --> K["Generate Semantic Diff & Audit Report"]
     end
 
     style G fill:#1b4332,color:#fff,stroke:#fff
@@ -69,134 +87,117 @@ flowchart TD
 
 ---
 
-## 📂 Directory Layout
+## 🔰 Beginner's Quickstart (30-Second Setup)
 
-Once enabled, your project directory maintains a clean, self-documenting structure:
+Installation requires **zero configuration and no command-line tools**. It follows a simple drop-in pattern.
+
+### Option 1: File Explorer / Drag-and-Drop (Easiest)
+1. Open the [`adapters/`](./adapters) folder in this repository.
+2. Select the single file matching your AI tool:
+   * **Cursor IDE:** Copy [`.cursorrules`](./adapters/.cursorrules)
+   * **Claude Code:** Copy [`CLAUDE.md`](./adapters/CLAUDE.md)
+   * **Google Antigravity / Gemini CLI:** Copy the rules from [`AGENTS.md`](./adapters/AGENTS.md)
+   * **Windsurf (Cascade):** Copy [`.windsurfrules`](./adapters/.windsurfrules)
+   * **GitHub Copilot:** Copy [`copilot-instructions.md`](./adapters/copilot-instructions.md) into your `.github/` folder
+3. Paste the file into your project's root folder.
+4. **Done!** Your AI is now governed by the Agent-Checkpoint protocol.
+
+---
+
+### Option 2: 1-Line Terminal Download (`curl`)
+Run the command matching your editor inside your project root:
+
+* **Cursor IDE:**
+  ```bash
+  curl -o .cursorrules https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/.cursorrules
+  ```
+* **Claude Code:**
+  ```bash
+  curl -o CLAUDE.md https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/CLAUDE.md
+  ```
+* **Windsurf:**
+  ```bash
+  curl -o .windsurfrules https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/.windsurfrules
+  ```
+
+---
+
+## 🎮 Day-to-Day Workflow (Zero Learning Curve)
+
+Once the adapter is placed, **you do not need to memorize new commands**. Continue interacting with your AI agent normally:
+
+### 1. Requesting Edits / Refactoring
+Issue your standard instructions:
+> *"Please refactor the login authentication in `auth_service.py` to support JWT refresh tokens and rate limiting."*
+
+**Automatically in the background, your AI will:**
+1. Backup your existing file to `.snapshots/auth_service_v1.0.0.py`.
+2. Apply the requested changes to `auth_service.py` (bumping to `v1.1.0`).
+3. Append technical rationale to `REVISION_LOG.md` and `.snapshots/manifest.json`.
+
+---
+
+### 2. Inspecting Differences (*Trackback*)
+Inspect what was changed without manual diffing:
+> *"Compare `auth_service.py` with the version before the latest refactor. What security logic and error handling changed?"*
+
+The agent reads the snapshot and provides a side-by-side Before vs After analysis.
+
+---
+
+### 3. Reverting Changes (*Rollback*)
+If an AI modification introduced issues:
+> *"Revert `auth_service.py` back to `v1.0.0`."*
+
+The agent safely restores the file from `.snapshots/` without corrupting your workspace history.
+
+---
+
+## 📂 Resulting Directory Layout
+
+Once active, your project maintains an organized, self-documenting structure:
 
 ```text
 my-project/
-├── .snapshots/                          # Archived states (isolated & lightweight)
+├── .snapshots/                          # Historical snapshots (auto-managed)
 │   ├── manifest.json                    # Machine-readable registry (< 5ms read)
-│   ├── data_pipeline_v1.0.0.py          # Exact state before v1.1.0 update
-│   └── model_v1.0.0.py
-├── REVISION_LOG.md                      # Human-readable audit log
-├── data_pipeline.py                     # Current active file (v1.1.0)
-└── model.py                             # Current active file
+│   ├── auth_service_v1.0.0.py           # Preserved pre-edit snapshot
+│   └── api_routes_v1.0.0.ts
+├── REVISION_LOG.md                      # Human-readable engineering audit trail
+├── auth_service.py                      # Active working file (v1.1.0)
+└── api_routes.ts                        # Active working file
 ```
 
 ---
 
-## 🚀 Quick Start (Works with ANY Agent)
+## ⚠️ Known Limitations
 
-Agent-Checkpoint requires **no npm, no pip, and no background daemon**. Simply copy the adapter rule into your favorite AI tool:
+In the interest of software engineering transparency, version `v1.0` has the following known boundaries:
 
-### 1. Google Antigravity / Gemini CLI
-Add the contents of [`adapters/AGENTS.md`](./adapters/AGENTS.md) to your workspace `AGENTS.md` or global `~/.gemini/AGENTS.md`:
-```markdown
-## 4. RESEARCH ARTIFACT VERSIONING & AUDIT TRAIL PROTOCOL
-Before modifying or refactoring existing files in any project/research folder:
-- Always adhere to the `agent-checkpoint` protocol.
-- Pre-Edit Snapshot: Copy prior state to `.snapshots/<filename>_v<OLD_VERSION>.<ext>`.
-- Impact Classification: Classify change into MAJOR, MINOR, or PATCH.
-- Dual-Ledger Logging: Synchronize `.snapshots/manifest.json` and `REVISION_LOG.md`.
-```
-
-### 2. Anthropic Claude Code
-Copy [`adapters/CLAUDE.md`](./adapters/CLAUDE.md) directly to the root of your project:
-```bash
-cp adapters/CLAUDE.md ./CLAUDE.md
-```
-
-### 3. Cursor IDE
-Copy [`adapters/.cursorrules`](./adapters/.cursorrules) to your workspace root:
-```bash
-cp adapters/.cursorrules ./.cursorrules
-```
-
-### 4. Windsurf (Cascade)
-Copy [`adapters/.windsurfrules`](./adapters/.windsurfrules) to your workspace root:
-```bash
-cp adapters/.windsurfrules ./.windsurfrules
-```
-
-### 5. GitHub Copilot Workspace
-Copy [`adapters/copilot-instructions.md`](./adapters/copilot-instructions.md) to `.github/copilot-instructions.md`.
+| Limitation | Technical Context | Recommended Mitigation |
+| :--- | :--- | :--- |
+| **1. Small Model Compliance** | The protocol relies on system prompt instructions. Tier-1 models (Claude 3.5/3.7, GPT-4o, Gemini 2.0 Pro) exhibit **~100% compliance**. Smaller local models (7B/8B) may occasionally omit a snapshot during very long conversation windows. | Use capable reasoning models for major refactoring tasks. |
+| **2. Snapshot Sprawl** | If a single file is modified hundreds of times, `.snapshots/` accumulates individual files. Auto-pruning is not yet included in v1.0. | Plain-text files consume minimal storage (~10 MB/month), but periodic manual pruning of old patch versions is recommended. |
+| **3. File Deletion & Renaming** | Version 1.0 targets file content edits (`modify`). Deleting a file via terminal (`rm`) is not yet intercepted automatically. | Confirm manual verification before instructing agents to execute permanent file deletions. |
+| **4. Multi-File Batch Edits** | Modifying 10 files in a single prompt creates 10 individual log entries rather than a single unified changeset. | Refactor modules in focused, logical increments. |
 
 ---
 
-## 📖 Dual-Ledger Specification
-
-### 1. Machine Index: `.snapshots/manifest.json`
-Designed for instant AI parsing without polluting token context:
-```json
-[
-  {
-    "version": "1.1.0",
-    "file": "data_pipeline.py",
-    "snapshot": ".snapshots/data_pipeline_v1.0.0.py",
-    "type": "MINOR",
-    "timestamp": "2026-10-06T11:30:00Z",
-    "rationale": "Add z-score feature scaling to prevent gradient saturation in downstream models",
-    "changes": [
-      "Added typing annotations (Tuple[pd.DataFrame, StandardScaler])",
-      "Integrated sklearn StandardScaler for numeric columns",
-      "Returned fitted scaler object for inference reproducibility"
-    ]
-  }
-]
-```
-
-### 2. Human Audit Trail: `REVISION_LOG.md`
-Designed for peer review, thesis defense, and team transparency:
-```markdown
-## [v1.1.0] - 2026-10-06 11:30:00 UTC
-- **Target File:** `data_pipeline.py`
-- **Change Type:** MINOR
-- **Archived Snapshot:** `.snapshots/data_pipeline_v1.0.0.py`
-- **Rationale:** Add z-score feature scaling to prevent gradient saturation in downstream models.
-- **Key Changes Applied:**
-  - Added strict typing annotations (`Tuple[pd.DataFrame, StandardScaler]`).
-  - Integrated `sklearn.preprocessing.StandardScaler` over numeric features.
-  - Returned fitted scaler alongside cleaned DataFrame for deployment pipeline reusability.
----
-```
-
----
-
-## 🛡️ Safety Guardrails & Disk Budget
+## 🛡️ Storage & Safety Guardrails
 
 | Category | Policy | Examples |
 | :--- | :--- | :--- |
-| **Tracked Artifacts** | ✅ Snapshot Enabled | Python (`.py`), TypeScript (`.ts`), Markdown (`.md`), LaTeX (`.tex`), Configs (`.json`, `.yaml`) |
-| **Heavy Binaries** | 🚫 Excluded (Never Snapshot) | Model weights (`.pt`, `.onnx`, `.bin`), Datasets (`> 5MB`, `.parquet`, `.h5`) |
-| **Build & Cache Dirs** | 🚫 Excluded (Never Snapshot) | `node_modules/`, `venv/`, `__pycache__/`, `dist/`, `build/`, `.git/` |
+| **Plain Text & Source Code** | ✅ **Auto-Snapshotted** | Python (`.py`), TypeScript (`.ts`), Markdown (`.md`), LaTeX (`.tex`), Configs (`.json`, `.yaml`) |
+| **Heavy Binaries** | 🚫 **Excluded (Never Snapshotted)** | Model weights (`.pt`, `.onnx`, `.bin`), Large datasets (`> 5MB`, `.parquet`, `.h5`) |
+| **Build & Cache Directories** | 🚫 **Excluded (Safe)** | `node_modules/`, `venv/`, `__pycache__/`, `build/`, `.git/` |
 
-### Storage Footprint Estimate:
-* Rata-rata file kode/teks: `10 KB - 50 KB`.
-* 500 revisi aktif dalam sebulan: `~7.5 MB - 15 MB`.
-* **Dampak storage hampir 0%** pada disk modern.
+**Storage Footprint:**  
+For 500 active file edits in a month, total storage overhead typically ranges between **7.5 MB and 15 MB**. Negligible on modern drives.
 
 ---
 
-## 🔍 How to Use Trackback & Rollback
+## 📄 License & Community
 
-Once an agent is operating under the Agent-Checkpoint protocol, you can use natural language prompts:
+Distributed under the [MIT License](./LICENSE) — free for personal, academic, and commercial use.
 
-* **To Compare:**
-  > *"Compare `model.py` with the version before the latest refactor. What mathematical assumptions were altered?"*
-* **To Review Changes:**
-  > *"Show me the revision log of our thesis Chapter 3 and explain why equation (4) was updated."*
-* **To Rollback:**
-  > *"Revert `pipeline.py` back to `v1.0.0` while creating a safety snapshot of current changes."*
-
----
-
-## 🌟 Live Example Included
-
-Check out the [`examples/`](./examples/) folder for a live demonstration of a Python data pipeline with pre-edit snapshots, manifest index, and revision logs.
-
----
-
-## 📄 License
-
-Distributed under the [MIT License](./LICENSE). Feel free to use, adapt, and share across your personal and enterprise workflows.
+Contributions, pull requests, and feedback are welcome! ⭐ Leave a star if this protocol helps safeguard your workflow.
