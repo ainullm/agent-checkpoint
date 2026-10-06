@@ -112,26 +112,26 @@ Run the command matching your editor inside your project root:
 
 * **Cursor IDE:**
   ```bash
-  curl -o .cursorrules https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/.cursorrules
+  curl -o .cursorrules https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.cursorrules
   ```
 * **Claude Code:**
   ```bash
-  curl -o CLAUDE.md https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/CLAUDE.md
+  curl -o CLAUDE.md https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/CLAUDE.md
   ```
 * **Google Antigravity / Gemini CLI:**
   ```bash
   # Project-specific:
-  curl -o AGENTS.md https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/AGENTS.md
+  curl -o AGENTS.md https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md
 
   # Or Global (protects all projects on your machine):
   # Linux/macOS:
-  curl -s https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/AGENTS.md >> ~/.gemini/AGENTS.md
+  curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md >> ~/.gemini/AGENTS.md
   # Windows PowerShell:
-  Add-Content -Path "$HOME\.gemini\AGENTS.md" -Value (Invoke-RestMethod "https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/AGENTS.md")
+  Add-Content -Path "$HOME\.gemini\AGENTS.md" -Value (Invoke-RestMethod "https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md")
   ```
 * **Windsurf:**
   ```bash
-  curl -o .windsurfrules https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/.windsurfrules
+  curl -o .windsurfrules https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.windsurfrules
   ```
 
 ---

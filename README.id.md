@@ -112,26 +112,26 @@ Jalankan perintah ini di dalam root proyek Anda:
 
 * **Cursor IDE:**
   ```bash
-  curl -o .cursorrules https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/.cursorrules
+  curl -o .cursorrules https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.cursorrules
   ```
 * **Claude Code:**
   ```bash
-  curl -o CLAUDE.md https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/CLAUDE.md
+  curl -o CLAUDE.md https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/CLAUDE.md
   ```
 * **Google Antigravity / Gemini CLI:**
   ```bash
   # Khusus proyek aktif:
-  curl -o AGENTS.md https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/AGENTS.md
+  curl -o AGENTS.md https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md
 
   # Atau Global untuk seluruh proyek di komputer Anda:
   # Linux/macOS:
-  curl -s https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/AGENTS.md >> ~/.gemini/AGENTS.md
+  curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md >> ~/.gemini/AGENTS.md
   # Windows PowerShell:
-  Add-Content -Path "$HOME\.gemini\AGENTS.md" -Value (Invoke-RestMethod "https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/AGENTS.md")
+  Add-Content -Path "$HOME\.gemini\AGENTS.md" -Value (Invoke-RestMethod "https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md")
   ```
 * **Windsurf:**
   ```bash
-  curl -o .windsurfrules https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/.windsurfrules
+  curl -o .windsurfrules https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.windsurfrules
   ```
 
 ---
