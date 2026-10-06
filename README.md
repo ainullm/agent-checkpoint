@@ -96,7 +96,10 @@ Installation requires **zero configuration and no command-line tools**. It follo
 2. Select the single file matching your AI tool:
    * **Cursor IDE:** Copy [`.cursorrules`](./adapters/.cursorrules)
    * **Claude Code:** Copy [`CLAUDE.md`](./adapters/CLAUDE.md)
-   * **Google Antigravity / Gemini CLI:** Copy the rules from [`AGENTS.md`](./adapters/AGENTS.md)
+   * **Google Antigravity / Gemini CLI:**
+     - **Project Scope:** Copy [`adapters/AGENTS.md`](./adapters/AGENTS.md) into your project root.
+     - **Global Machine Scope (Recommended):** Append [`adapters/AGENTS.md`](./adapters/AGENTS.md) to `~/.gemini/AGENTS.md` (protects all projects automatically!).
+     - **Native Skill Scope:** Copy [`SKILL.md`](./SKILL.md) to your Antigravity skills directory (`.agents/skills/agent-checkpoint/SKILL.md` or `~/.gemini/config/plugins/.../skills/agent-checkpoint/`).
    * **Windsurf (Cascade):** Copy [`.windsurfrules`](./adapters/.windsurfrules)
    * **GitHub Copilot:** Copy [`copilot-instructions.md`](./adapters/copilot-instructions.md) into your `.github/` folder
 3. Paste the file into your project's root folder.
@@ -114,6 +117,17 @@ Run the command matching your editor inside your project root:
 * **Claude Code:**
   ```bash
   curl -o CLAUDE.md https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/CLAUDE.md
+  ```
+* **Google Antigravity / Gemini CLI:**
+  ```bash
+  # Project-specific:
+  curl -o AGENTS.md https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/AGENTS.md
+
+  # Or Global (protects all projects on your machine):
+  # Linux/macOS:
+  curl -s https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/AGENTS.md >> ~/.gemini/AGENTS.md
+  # Windows PowerShell:
+  Add-Content -Path "$HOME\.gemini\AGENTS.md" -Value (Invoke-RestMethod "https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/AGENTS.md")
   ```
 * **Windsurf:**
   ```bash

@@ -96,7 +96,10 @@ Pemasangan tidak memerlukan konfigurasi rumit maupun perintah terminal. Cukup gu
 2. Pilih 1 file yang sesuai dengan aplikasi AI Anda:
    * **Cursor IDE:** Salin file [`.cursorrules`](./adapters/.cursorrules)
    * **Claude Code:** Salin file [`CLAUDE.md`](./adapters/CLAUDE.md)
-   * **Google Antigravity / Gemini CLI:** Salin aturan dari [`AGENTS.md`](./adapters/AGENTS.md)
+   * **Google Antigravity / Gemini CLI:**
+     - **Tingkat Proyek (Project Scope):** Salin [`adapters/AGENTS.md`](./adapters/AGENTS.md) ke root proyek Anda.
+     - **Tingkat Global PC (Direkomendasikan):** Tambahkan isi [`adapters/AGENTS.md`](./adapters/AGENTS.md) ke `~/.gemini/AGENTS.md` (otomatis melindungi semua proyek di laptop Anda!).
+     - **Tingkat Native Skill:** Salin [`SKILL.md`](./SKILL.md) ke folder skill Antigravity Anda (`.agents/skills/agent-checkpoint/SKILL.md` atau `~/.gemini/config/plugins/.../skills/agent-checkpoint/`).
    * **Windsurf (Cascade):** Salin file [`.windsurfrules`](./adapters/.windsurfrules)
    * **GitHub Copilot:** Salin file [`copilot-instructions.md`](./adapters/copilot-instructions.md) ke folder `.github/`
 3. Tempel (*paste*) file tersebut ke folder root proyek Anda.
@@ -114,6 +117,17 @@ Jalankan perintah ini di dalam root proyek Anda:
 * **Claude Code:**
   ```bash
   curl -o CLAUDE.md https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/CLAUDE.md
+  ```
+* **Google Antigravity / Gemini CLI:**
+  ```bash
+  # Khusus proyek aktif:
+  curl -o AGENTS.md https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/AGENTS.md
+
+  # Atau Global untuk seluruh proyek di komputer Anda:
+  # Linux/macOS:
+  curl -s https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/AGENTS.md >> ~/.gemini/AGENTS.md
+  # Windows PowerShell:
+  Add-Content -Path "$HOME\.gemini\AGENTS.md" -Value (Invoke-RestMethod "https://raw.githubusercontent.com/username/agent-checkpoint/main/adapters/AGENTS.md")
   ```
 * **Windsurf:**
   ```bash
