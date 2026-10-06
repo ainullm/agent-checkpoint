@@ -136,34 +136,93 @@ Jalankan perintah ini di dalam root proyek Anda:
 
 ---
 
-## 🎮 Penggunaan Sehari-hari (Zero Learning Curve)
+## 🎮 Panduan Penggunaan Lengkap & Skenario Nyata
 
-Setelah adapter terpasang, **Anda tidak perlu menghafal perintah baru**. Berinteraksilah dengan AI seperti biasa:
-
-### 1. Meminta AI Mengedit Kode
-Beri prompt seperti biasa:
-> *"Tolong refactor fungsi autentikasi login di auth_service.py agar mendukung JWT token refresh dan rate limiting."*
-
-**Secara otomatis di balik layar, AI akan:**
-1. Mencadangkan file lama Anda ke `.snapshots/auth_service_v1.0.0.py`.
-2. Menerapkan perubahan pada `auth_service.py` (naik versi menjadi `v1.1.0`).
-3. Mencatat alasan teknis ke `REVISION_LOG.md` dan `.snapshots/manifest.json`.
+Setelah file adapter terpasang, **tidak ada perintah CLI atau sintaks khusus yang perlu Anda hafalkan**. Anda dapat berinteraksi dengan AI secara natural seperti biasa. Berikut adalah 4 alur kerja (*workflows*) standar yang paling sering digunakan:
 
 ---
 
-### 2. Memeriksa Perubahan (*Trackback*)
-Lihat perbedaan tanpa perlu membuka git diff secara manual:
-> *"Bandingkan auth_service.py dengan versi sebelum direvisi. Apa saja logic keamanan dan error handling yang berubah?"*
+### Alur Kerja 1: Penambahan Fitur & Refaktorisasi Sehari-hari
 
-AI akan langsung membaca snapshot lama dan menyajikan perbandingan *Before vs After*.
+**Perintah (Prompt) yang Anda Berikan ke AI:**
+> *"Tolong refactor fungsi autentikasi di `auth_service.py` agar mendukung JWT refresh token, tambahkan pembatasan frekuensi (rate limiting) dengan Redis, dan perbaiki penanganan error."*
+
+**Yang Dilakukan AI Secara Otomatis di Balik Layar:**
+1. **Memeriksa Status Berkas:** Mendeteksi bahwa `auth_service.py` sudah ada pada versi `v1.0.0`.
+2. **Membuat Snapshot Pra-Edit:** Menyalin `auth_service.py` $\to$ `.snapshots/auth_service_v1.0.0.py`.
+3. **Mengklasifikasikan Dampak SemVer:** Mengevaluasi perubahan. Karena menambahkan fitur baru tanpa merusak antarmuka lama, AI mengkategorikannya sebagai `MINOR` ($\to$ `v1.1.0`).
+4. **Menerapkan Modifikasi:** Menimpa `auth_service.py` dengan kode baru yang diminta.
+5. **Menyelaraskan Buku Besar Ganda (*Dual-Ledger*):**
+   * Menambahkan indeks mesin ke `.snapshots/manifest.json`.
+   * Menambahkan catatan teknis ke `REVISION_LOG.md` lengkap dengan rentang baris dan rasional arsitekturnya.
 
 ---
 
-### 3. Membatalkan Perubahan (*Rollback*)
-Jika hasil kodingan AI tidak sesuai harapan:
-> *"Batalkan perubahan pada auth_service.py dan kembalikan ke versi v1.0.0."*
+### Alur Kerja 2: Pemulihan Darurat / Rollback (Menangani Halusinasi AI)
 
-AI akan mengembalikan file dari `.snapshots/` dengan aman.
+Jika AI berhalusinasi, menghapus logika bisnis yang penting, atau menimbulkan error yang merusak aplikasi:
+
+**Perintah (Prompt) yang Anda Berikan ke AI:**
+> *"Perubahan pada `auth_service.py` menyebabkan unit test gagal. Tolong batalkan perubahan dan kembalikan `auth_service.py` ke versi `v1.0.0`."*
+
+**Yang Dilakukan AI:**
+1. Mencari versi `v1.0.0` di dalam `.snapshots/manifest.json`.
+2. Menyalin kembali `.snapshots/auth_service_v1.0.0.py` menimpa file aktif `auth_service.py`.
+3. Mencatat aksi rollback di `REVISION_LOG.md` (misal: `PATCH: Rolled back auth_service.py dari v1.1.0 ke v1.0.0 karena kegagalan pengujian`).
+4. Kode Anda seketika kembali ke kondisi stabil tanpa Anda perlu panik mencari baris kode yang hilang.
+
+---
+
+### Alur Kerja 3: Pelacakan Riwayat Mendalam (*Trackback*) & Analisis Diff
+
+Ketika Anda kembali ke komputer setelah AI selesai melakukan banyak revisi berturut-turut:
+
+**Perintah (Prompt) yang Anda Berikan ke AI:**
+> *"Trackback: Bandingkan `data_pipeline.py` dengan versi sebelum optimasi vektor. Jelaskan fungsi mana saja dan kompleksitas algoritma apa yang berubah?"*
+
+**Yang Dilakukan AI:**
+1. Membaca snapshot lama `.snapshots/data_pipeline_v1.0.0.py` dan file aktif `data_pipeline.py`.
+2. Membaca `REVISION_LOG.md` untuk memahami konteks perubahan.
+3. Menyajikan laporan komparasi *Before vs After* yang jelas, menyoroti fungsi yang berubah tanpa Anda harus menjalankan perintah `git diff` yang rumit.
+
+---
+
+### Alur Kerja 4: Perubahan Multi-File Sekaligus (Cursor Composer & Agent Mode)
+
+Saat menggunakan fitur Cursor Composer atau Claude Code untuk proyek multi-file:
+> *"Buat alur checkout pembayaran baru: perbarui `routes.ts`, `stripe_client.py`, dan `database.sql`."*
+
+Protokol ini berjalan secara berurutan dan terisolasi untuk setiap target file:
+* `.snapshots/routes_v1.0.0.ts`
+* `.snapshots/stripe_client_v1.0.0.py`
+* `.snapshots/database_v1.0.0.sql`
+
+Masing-masing file mendapatkan cadangan tersendiri dan tercatat rapi di `manifest.json` serta `REVISION_LOG.md`.
+
+---
+
+## 🤝 Strategi Integrasi dengan Git: Cara Mengelola Folder `.snapshots/`
+
+Agent-Checkpoint dirancang untuk melengkapi Git, bukan menggantikannya. Anda dapat memilih salah satu dari dua strategi berikut sesuai kebutuhan tim:
+
+```mermaid
+flowchart LR
+    subgraph StrategiA ["Strategi A: Audit Trail Penuh Tim (Direkomendasikan untuk Open Source & Riset)"]
+        A1[Commit Kode Aktif] --> A2[Commit REVISION_LOG.md]
+        A2 --> A3[Commit .snapshots/ ke Git]
+    end
+
+    subgraph StrategiB ["Strategi B: Jaring Pengaman Lokal (Direkomendasikan untuk Repo Bersih)"]
+        B1[Commit Kode Aktif] --> B2[Commit REVISION_LOG.md]
+        B2 --> B3[Tambahkan .snapshots/ ke .gitignore]
+    end
+
+    style StrategiA fill:#132a13,color:#fff,stroke:#fff
+    style StrategiB fill:#1f2421,color:#fff,stroke:#fff
+```
+
+* **Strategi A (Audit Trail Lengkap Tim):** Masukkan `.snapshots/` ke dalam commit Git. Rekan kerja yang melakukan *pull* dapat melihat kode lama yang diubah AI dan meninjau log revisi langsung saat proses *Code Review / Pull Request*.
+* **Strategi B (Pengaman Lokal Mandiri):** Tambahkan `.snapshots/` ke dalam file `.gitignore`, namun tetap sertakan `REVISION_LOG.md` di Git. Anda tetap mendapatkan proteksi rollback 100% di komputer lokal, sementara ukuran repositori Git di cloud tetap sangat ramping.
 
 ---
 
@@ -184,25 +243,67 @@ my-project/
 
 ---
 
-## ⚠️ Batasan yang Diketahui (Known Limitations)
+## 💾 Analisis Konsumsi Penyimpanan & Skenario Penggunaan Nyata
 
-Demi transparansi rekayasa perangkat lunak, versi `v1.0` memiliki batasan berikut:
+Kekhawatiran umum saat menggunakan sistem snapshot adalah: *"Apakah ini akan membuat harddisk saya penuh seiring waktu?"*  
+Jawabannya adalah: **Sama sekali tidak. File teks kode berukuran sangat kecil, dan batasan cerdas menjamin nol pembengkakan data.**
 
-| Batasan | Konteks Teknis | Saran Mitigasi |
-| :--- | :--- | :--- |
-| **1. Kepatuhan Model Kecil** | Protokol berbasis instruksi sistem. Model tier-1 (Claude 3.5/3.7, GPT-4o, Gemini 2.0 Pro) memiliki kepatuhan **~100%**. Model kecil lokal (7B/8B) sesekali bisa lupa membuat snapshot jika sesi chat sangat panjang. | Gunakan model cerdas untuk tugas refactoring utama. |
-| **2. Penumpukan Snapshot** | Jika file diedit ratusan kali, folder `.snapshots/` akan terus bertambah. Fitur pembersihan otomatis (*auto-pruning*) belum disertakan di v1.0. | File teks memakan storage sangat sedikit (~10 MB/bln), tetapi disarankan menghapus versi patch lama secara berkala. |
-| **3. Operasi Delete / Rename** | Versi 1.0 berfokus pada edit isi (*modify*). Menghapus file lewat terminal (`rm`) belum dicegat secara otomatis. | Lakukan konfirmasi manual sebelum menyuruh AI menghapus file secara permanen. |
-| **4. Refactoring Multi-File Sekaligus** | Mengubah 10 file dalam 1 prompt akan menghasilkan 10 entri log terpisah daripada 1 entri grup (*changeset*). | Lakukan refactor bertahap per modul. |
+### 📊 Simulasi Skenario Penggunaan Nyata & Hitungan Matematis
+
+Tabel di bawah mengasumsikan ukuran rata-rata satu file kode sumber adalah **15 KB** (setara dengan 300–600 baris kode Python, TypeScript, atau Go):
+
+| Profil Pengguna | Frekuensi Edit AI Harian | Rata-rata Ukuran File | Penggunaan Disk / Bulan | Penggunaan Disk / Tahun | % dari SSD 512 GB |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| 🧑‍💻 **Hobi / Mahasiswa**<br>*(Proyek santai, tugas kuliah, sesekali eksperimen)* | ~2 edit/hari<br>*(10/minggu)* | 15 KB | **~0.9 MB** | **~10.8 MB** | `0.002%` |
+| 🚀 **Software Engineer Penuh Waktu**<br>*(Membangun fitur setiap hari, refaktorisasi aktif)* | ~30 edit/hari | 15 KB | **~13.5 MB** | **~162 MB** | `0.031%` |
+| ⚡ **Power User AI Pair Programming**<br>*(Pengguna berat Cursor Composer, 10+ sesi prompt/hari)* | ~100 edit/hari | 15 KB | **~45.0 MB** | **~540 MB** | `0.105%` |
+| 🤖 **Bot Agen Otonom Berkelanjutan**<br>*(Loop otomatisasi penulisan kode dan testing non-stop)* | ~500 edit/hari | 15 KB | **~225.0 MB** | **~2.7 GB** | `0.527%` |
+
+> 💡 **Kesimpulan:** Bahkan seorang software engineer aktif yang melakukan 30 kali revisi kode per hari hanya menghabiskan **kurang dari 200 MB dalam satu tahun penuh** — lebih kecil dari satu aplikasi desktop atau folder `node_modules` sederhana.
 
 ---
 
-## 🌐 Dukungan File Universal & Batasan Penyimpanan Cerdas
+### 🛡️ Mengapa Ruang Penyimpanan Tidak Akan Pernah Penuh? (3 Pilar Keamanan)
 
-Agent-Checkpoint **mendukung semua bahasa pemrograman dan jenis file teks (*universal & agnostic*)**. Aturan dasarnya sangat sederhana:  
-> **"Jika suatu file dapat dibuka dan diedit di editor teks atau editor kode, Agent-Checkpoint melindunginya."**
+1. **Jejak Teks yang Mikroskopis:** Berkas teks sangat ringkas. 100 snapshot file 10 KB hanya memakan 1 MB.
+2. **📏 Batas Cerdas 1 MB untuk Data Tabular:** File data pengujian (`.csv`, `.jsonl`, `.tsv`) $\le 1\text{ MB}$ akan di-snapshot. Dataset $> 1\text{ MB}$ secara ketat dilewati dari penyalinan fisik dan hanya dicatat metadatanya saja.
+3. **🚫 Pengecualian Mutlak File Biner Berat:** Bobot model machine learning (`.pt`, `.onnx`, `.safetensors`), arsip biner (`.zip`, `.exe`), dan folder dependensi (`node_modules/`, `venv/`, `__pycache__/`) **sama sekali tidak pernah diarsip**.
 
-### ✅ File Apa Saja yang Otomatis Di-snapshot? (Mendukung 100+ Format)
+---
+
+### 🧹 Panduan Pembersihan & Retensi (Membebaskan Ruang Kapan Saja)
+
+Karena folder `.snapshots/` hanya berisi arsip riwayat dan bukan kode yang sedang berjalan (*runtime*), **menghapus atau membersihkan isi snapshot 100% aman dan tidak akan merusak proyek Anda**.
+
+#### 1. Menghapus Snapshot yang Berumur Lebih dari 30 Hari
+* **PowerShell (Windows):**
+  ```powershell
+  Get-ChildItem -Path .snapshots -File | Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-30) -and $_.Name -ne "manifest.json" } | Remove-Item
+  ```
+* **Bash / Zsh (Linux & macOS):**
+  ```bash
+  find .snapshots/ -type f ! -name "manifest.json" -mtime +30 -delete
+  ```
+
+#### 2. Menyimpan Hanya 5 Versi Terakhir per File
+* **Bash / Zsh:**
+  ```bash
+  # Menghapus file snapshot lama dan tetap mempertahankan manifest.json
+  ls -t .snapshots/*_*.* 2>/dev/null | tail -n +15 | xargs -r rm --
+  ```
+
+#### 3. Reset Total (Membersihkan Bersih)
+Jika sebuah proyek sudah selesai dan Anda ingin mengosongkan folder snapshot:
+```bash
+# Menghapus seluruh snapshot dan mereset indeks mesin
+rm -rf .snapshots && mkdir .snapshots && echo "[]" > .snapshots/manifest.json
+```
+
+---
+
+## 🌐 Dukungan Berkas Universal (Mendukung 100+ Format)
+
+Agent-Checkpoint sepenuhnya independen terhadap bahasa dan format berkas:
 
 * **Bahasa Pemrograman & Sistem:** Python (`.py`), TypeScript (`.ts`, `.tsx`), JavaScript (`.js`, `.jsx`), Go (`.go`), Rust (`.rs`), C/C++ (`.c`, `.cpp`, `.h`, `.hpp`), C# (`.cs`), Java (`.java`), PHP (`.php`), Ruby (`.rb`), Swift (`.swift`), Kotlin (`.kt`), Dart (`.dart`), Scala (`.scala`), Shell (`.sh`, `.bash`, `.zsh`), PowerShell (`.ps1`, `.bat`), Lua (`.lua`), R (`.r`), Julia (`.jl`).
 * **Web & Antarmuka Frontend:** HTML (`.html`), CSS (`.css`), SCSS/SASS (`.scss`), Vue (`.vue`), Svelte (`.svelte`), XML (`.xml`), SVG (`.svg`).
@@ -215,26 +316,14 @@ Agent-Checkpoint **mendukung semua bahasa pemrograman dan jenis file teks (*univ
 
 ---
 
-### 🛡️ Batasan Penyimpanan Cerdas (Garansi Nol Beban Disk)
+## ⚠️ Batasan yang Diketahui (Known Boundaries v1.0)
 
-Untuk memperluas dukungan format tanpa membuat harddisk Anda sesak, protokol menerapkan **Aturan Bertingkat (*Tiered Ingestion Rules*)**:
-
-#### 1. 📏 Ambang Batas 1 MB untuk Data Tabular (*Smart 1 MB Cap*)
-* File data kecil, mock data uji, dan data seed (`.csv`, `.tsv`, `.jsonl`, `.ndjson`) **hanya di-snapshot jika ukurannya $\le 1\text{ MB}$**.
-* Jika ukuran file melebihi $1\text{ MB}$ (contoh: dataset training 100 MB), AI **secara otomatis tidak menduplikasi filenya**, melainkan hanya mencatat metadata-nya (nama file dan waktu perubahan) di `REVISION_LOG.md` tanpa memakan ruang harddisk.
-
-#### 2. 🚫 Pengecualian Ketat File Biner
-Protokol secara ketat menolak pencadangan file biner berat dan direktori dependensi:
-
-| Kategori Berkas | Kebijakan Snapshot | Contoh Berkas (Tidak Pernah Diarsip) |
+| Batasan | Konteks Teknis | Saran Mitigasi |
 | :--- | :--- | :--- |
-| **Model AI & Machine Learning** | 🚫 **Dikecualikan** | Bobot model & checkpoint (`.pt`, `.pth`, `.onnx`, `.safetensors`, `.bin`, `.ckpt`) |
-| **Dataset Berukuran Besar** | 🚫 **Dikecualikan** | Data tabular berat ($> 1\text{ MB}$, `.parquet`, `.h5`, `.arrow`, `.feather`, `.csv` raksasa) |
-| **Biner Terkompilasi & Media** | 🚫 **Dikecualikan** | File biner (`.exe`, `.dll`, `.so`), arsip (`.zip`, `.tar.gz`), video/audio |
-| **Folder Cache & Dependensi** | 🚫 **Dikecualikan** | `node_modules/`, `venv/`, `.venv/`, `__pycache__/`, `target/`, `dist/`, `build/`, `.git/` |
-
-**Estimasi Ruang Penyimpanan:**  
-Karena berkas kode sumber teks berukuran sangat kecil (rata-rata 5 KB s.d. 50 KB), bahkan **500 kali modifikasi berkas dalam sebulan** hanya memakan sekitar **~7.5 MB hingga 15 MB** ruang harddisk. Praktis tidak membebani disk modern sama sekali.
+| **1. Kepatuhan Model Kecil** | Protokol berbasis instruksi sistem. Model tier-1 (Claude 3.5/3.7, GPT-4o, Gemini 2.0 Pro) memiliki kepatuhan **~100%**. Model kecil lokal (7B/8B) sesekali bisa lupa membuat snapshot jika sesi chat sangat panjang. | Gunakan model cerdas untuk tugas refactoring utama. |
+| **2. Penumpukan Snapshot** | Jika file diedit ratusan kali, folder `.snapshots/` akan terus bertambah. Fitur pembersihan otomatis (*auto-pruning*) belum disertakan di v1.0. | File teks memakan storage sangat sedikit (~10 MB/bln), tetapi disarankan membersihkan versi lama secara berkala menggunakan perintah di atas. |
+| **3. Operasi Delete / Rename** | Versi 1.0 berfokus pada edit isi (*modify*). Menghapus file lewat terminal (`rm`) belum dicegat secara otomatis. | Lakukan konfirmasi manual sebelum menyuruh AI menghapus file secara permanen. |
+| **4. Refactoring Multi-File Sekaligus** | Mengubah 10 file dalam 1 prompt akan menghasilkan 10 entri log terpisah daripada 1 entri grup (*changeset*). | Lakukan refactor bertahap per modul. |
 
 ---
 
