@@ -94,7 +94,7 @@ Installation requires **zero configuration and no command-line tools**. It follo
 ### Option 1: File Explorer / Drag-and-Drop (Easiest)
 1. Open the [`adapters/`](./adapters) folder in this repository.
 2. Select the single file matching your AI tool:
-   * **Cursor IDE:** Copy [`.cursorrules`](./adapters/.cursorrules)
+   * **Cursor IDE:** Copy [`.cursorrules`](./adapters/.cursorrules) to project root, or copy [`agent-checkpoint.mdc`](./adapters/agent-checkpoint.mdc) into `.cursor/rules/` (Cursor 0.40+)
    * **Claude Code:** Copy [`CLAUDE.md`](./adapters/CLAUDE.md)
    * **Google Antigravity / Gemini CLI:**
      - **Project Scope:** Copy [`adapters/AGENTS.md`](./adapters/AGENTS.md) into your project root.
@@ -112,7 +112,11 @@ Run the command matching your editor inside your project root:
 
 * **Cursor IDE:**
   ```bash
+  # Classic .cursorrules:
   curl -o .cursorrules https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.cursorrules
+
+  # Or Modern Cursor Rules (.cursor/rules/*.mdc):
+  mkdir -p .cursor/rules && curl -o .cursor/rules/agent-checkpoint.mdc https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/agent-checkpoint.mdc
   ```
 * **Claude Code:**
   ```bash

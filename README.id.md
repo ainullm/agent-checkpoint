@@ -94,7 +94,7 @@ Pemasangan tidak memerlukan konfigurasi rumit maupun perintah terminal. Cukup gu
 ### Cara 1: Menggunakan File Explorer (Paling Mudah)
 1. Buka folder [`adapters/`](./adapters) di repositori ini.
 2. Pilih 1 file yang sesuai dengan aplikasi AI Anda:
-   * **Cursor IDE:** Salin file [`.cursorrules`](./adapters/.cursorrules)
+   * **Cursor IDE:** Salin [`.cursorrules`](./adapters/.cursorrules) ke root proyek, atau salin [`agent-checkpoint.mdc`](./adapters/agent-checkpoint.mdc) ke dalam `.cursor/rules/` (Cursor 0.40+)
    * **Claude Code:** Salin file [`CLAUDE.md`](./adapters/CLAUDE.md)
    * **Google Antigravity / Gemini CLI:**
      - **Tingkat Proyek (Project Scope):** Salin [`adapters/AGENTS.md`](./adapters/AGENTS.md) ke root proyek Anda.
@@ -112,7 +112,11 @@ Jalankan perintah ini di dalam root proyek Anda:
 
 * **Cursor IDE:**
   ```bash
+  # Mode Classic .cursorrules:
   curl -o .cursorrules https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.cursorrules
+
+  # Mode Modern Cursor Rules (.cursor/rules/*.mdc):
+  mkdir -p .cursor/rules && curl -o .cursor/rules/agent-checkpoint.mdc https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/agent-checkpoint.mdc
   ```
 * **Claude Code:**
   ```bash

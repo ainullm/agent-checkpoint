@@ -6,4 +6,4 @@ Follow the Agent-Checkpoint protocol whenever modifying existing files:
 1. Snapshot First: Copy existing file to `.snapshots/<filename>_v<OLD_VERSION>.<ext>` before editing.
 2. Semantic Bump: Classify into MAJOR (breaking/architectural), MINOR (new feature/section), or PATCH (bugfix/typo).
 3. Dual-Ledger: Update `.snapshots/manifest.json` and append the rationale and diff list to `REVISION_LOG.md`.
-4. Scope Safety: Ignore binaries, heavy datasets (>5MB), and caches (venv, node_modules).
+4. Scope Safety: Ignore binaries, heavy datasets (>1MB), and caches (venv, node_modules).
