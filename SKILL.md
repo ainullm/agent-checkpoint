@@ -1,39 +1,36 @@
 ---
 name: agent-checkpoint
 description: >-
-  Zero-data-loss file snapshotting, SemVer classification, and dual-ledger audit trail
-  for autonomous AI coding & research agents.
-  Triggers on: checkpoint, snapshot, audit trail, versioning, edit file, refactor,
-  trackback, history, revision log, rollback, diff version.
+  Ultra-efficient, zero-data-loss pre-edit snapshotting, SemVer classification,
+  and token-optimized dual-ledger audit trail (v2.0) for autonomous AI coding agents.
+  Triggers on: agent-checkpoint, checkpoint, snapshot, audit trail, versioning, edit file,
+  refactor, trackback, history, revision log, rollback, diff version.
 ---
 
-# Agent-Checkpoint Protocol
+# Agent-Checkpoint Protocol (v2.0 Turbo)
 
-A universal, zero-dependency audit and safety protocol for autonomous AI coding and research agents.
+A universal, zero-dependency safety and provenance protocol for autonomous AI coding and research agents, optimized for **minimum token consumption** and **clean hierarchical storage**.
 
 ## Core Directives
 
 1. **Zero Data Loss (Pre-Edit Archiving):** Never modify, refactor, or overwrite an existing file without archiving its exact prior state.
-2. **Dual-Ledger Synchronization:**
-   - **Machine Index (`.snapshots/manifest.json`):** Fast, compact JSON array enabling agents to discover past revisions and calculate diffs without token bloat.
-   - **Human-Readable Audit Trail (`REVISION_LOG.md`):** Rich Markdown changelog detailing timestamps, SemVer impacts, rationale, and bullet-point changes.
-3. **Universal Scope & Smart Storage Guardrails:**
-   - **Full Text & Code Coverage (Always Snapshotted):**
-     * Source Code & Scripts: Python (`.py`), TypeScript (`.ts`, `.tsx`), JavaScript (`.js`), Go (`.go`), Rust (`.rs`), C/C++ (`.c`, `.cpp`), Java, PHP, Ruby, Swift, Kotlin, Dart, Shell (`.sh`, `.ps1`), Lua, R, Julia.
-     * Research & Notebooks: Jupyter Notebooks (`.ipynb`), Typst (`.typ`), LaTeX (`.tex`, `.bib`), Markdown (`.md`), RestructuredText (`.rst`).
-     * Diagrams as Code: Mermaid (`.mmd`), PlantUML (`.puml`), Graphviz (`.dot`), SVG (`.svg`), Draw.io (`.drawio`), Excalidraw (`.excalidraw`).
-     * API Schemas & Contracts: Protobuf (`.proto`), GraphQL (`.graphql`), Prisma (`.prisma`), OpenAPI (`.yaml`), Thrift (`.thrift`).
-     * Graphics & Shaders: GLSL (`.glsl`), HLSL (`.hlsl`), WGSL (`.wgsl`), GDScript (`.gd`).
-     * Hardware & Embedded: Verilog (`.v`, `.sv`), VHDL (`.vhd`), Assembly (`.asm`), Arduino (`.ino`), CMake.
-     * Policies & Configs: OPA Rego (`.rego`), CUE (`.cue`), JSON, YAML, TOML, Dockerfile.
-   - **Smart 1 MB Threshold for Tabular Data:**
-     * Small data seeds/fixtures (`.csv`, `.tsv`, `.jsonl`) are snapshotted ONLY if file size $\le 1\text{ MB}$.
-     * If file size $> 1\text{ MB}$, the agent logs the change metadata in `REVISION_LOG.md` and `manifest.json` (with `"snapshot": null, "reason": "exceeds_1mb_cap"`) without duplicating the raw file, strictly preventing disk bloat.
-   - **Strict Exclusions (Never Snapshotted):**
-     * Machine Learning weights & checkpoints (`.pt`, `.pth`, `.onnx`, `.bin`, `.safetensors`, `.ckpt`).
-     * Large tabular data & binaries ($> 1\text{ MB}$, `.parquet`, `.h5`, `.arrow`, `.feather`).
-     * Executables, libraries & archives (`.exe`, `.dll`, `.so`, `.zip`, `.tar.gz`, video/audio).
-     * Dependency caches & build outputs (`node_modules/`, `venv/`, `.venv/`, `__pycache__/`, `target/`, `dist/`, `build/`, `.git/`).
+2. **Hierarchical File Bucketing (Clean Storage):**
+   Every tracked file receives its own isolated directory inside `.snapshots/` matching its relative project path:
+   ```text
+   .snapshots/<relative_filepath>/
+   ├── manifest.json            # Sharded local index (< 40 tokens read)
+   ├── v1.0.0.<ext>             # Pristine pre-edit snapshot
+   └── v1.1.0.<ext>
+   ```
+3. **Sliding Window Retention ($K = 5$ Versions Max):**
+   To strictly bound disk space, each file bucket retains at most **5 latest snapshot versions**. When creating version 6, the agent automatically prunes the oldest physical snapshot file and updates the bucket's `manifest.json`.
+4. **Token-Optimized Dual-Ledger Synchronization:**
+   - **Sharded Local Index (`.snapshots/<filepath>/manifest.json`):** AI reads *only* this file's version state ($O(1)$ token overhead: ~30–50 tokens), avoiding global scans.
+   - **Micro-Changelog Stream (`REVISION_LOG.md`):** Append-only compact table stream. **Never re-read previous log history** into context.
+5. **Universal Scope & Guardrails:**
+   - Full text/code coverage across 100+ extensions (`.py`, `.ts`, `.go`, `.rs`, `.cpp`, `.md`, `.json`, `.yaml`, etc.).
+   - Tabular files (`.csv`, `.tsv`, `.jsonl`) are snapshotted ONLY if $\le 1\text{ MB}$. Files $> 1\text{ MB}$ log metadata only.
+   - Strictly exclude binary models (`.pt`, `.onnx`, `.safetensors`), archives (`.zip`), and caches (`node_modules/`, `venv/`, `__pycache__/`, `.git/`).
 
 ---
 
@@ -42,87 +39,70 @@ A universal, zero-dependency audit and safety protocol for autonomous AI coding 
 ```text
 [Project_Root]/
 ├── .snapshots/                          # Historical snapshots directory
-│   ├── manifest.json                    # Machine-readable registry (< 5ms parsing)
-│   └── <filename>_v<OLD_VERSION>.<ext>  # Exact copy of previous state
-├── REVISION_LOG.md                      # Human-readable audit log
-├── <active_file_1>.<ext>                # Current working file
-└── <active_file_2>.<ext>
+│   ├── auth_service.py/                 # Isolated bucket per file
+│   │   ├── manifest.json                # Local version registry (< 40 tokens)
+│   │   ├── v1.0.0.py                    # Archived pre-edit snapshot
+│   │   └── v1.1.0.py
+│   └── src/routes/api.ts/               # Preserves nested structure
+│       ├── manifest.json
+│       └── v1.0.0.ts
+├── REVISION_LOG.md                      # Append-only compact Markdown table
+├── auth_service.py                      # Active working file
+└── src/routes/api.ts
 ```
 
 ---
 
 ## Operating Procedures (SOP)
 
-### Workflow 1: File Modification & Checkpointing
+### Workflow 1: File Modification & Checkpointing (Fast-Path)
 
 Whenever instructed to modify, refactor, or update an existing file:
 
-1. **Step 1: Check Current Version**
-   - For new files: Register initial creation as `v1.0.0` (or `v0.1.0` if draft).
-   - For existing files: Consult `.snapshots/manifest.json` for the latest recorded version.
+1. **Step 1: Check Local Bucket (`.snapshots/<filepath>/manifest.json`)**
+   - If bucket or file does not exist: treat as initial version (`v1.0.0`).
+   - If exists: read latest version from the local `manifest.json` (< 40 tokens).
 
-2. **Step 2: Classify Version Bump (Semantic Impact)**
-   - **MAJOR (`v(X+1).0.0`):** Paradigm shift, architectural overhaul, breaking API contract, or chapter restructuring.
-   - **MINOR (`vX.(Y+1).0`):** New feature, new experimental methodology, added baseline, or new sub-section.
-   - **PATCH (`vX.Y.(Z+1)`):** Bug fix, typo correction, parameter tuning, or styling cleanup.
+2. **Step 2: Classify SemVer Impact**
+   - **MAJOR:** Breaking architectural shift, interface overhaul.
+   - **MINOR:** Additive features, new endpoints/functions.
+   - **PATCH:** Bug fix, refactor, parameter tuning, typo.
 
-3. **Step 3: Capture Snapshot**
-   - Ensure `.snapshots/` exists.
-   - Copy current active file to:
-     `.snapshots/<filename_without_ext>_v<OLD_VERSION>.<ext>`
+3. **Step 3: Capture Pre-Edit Snapshot & Apply Retention ($K \le 5$)**
+   - Ensure directory `.snapshots/<filepath>/` exists.
+   - Copy current active file to `.snapshots/<filepath>/v<OLD_VERSION>.<ext>`.
+   - *Sliding Window Check:* If total snapshot files in bucket $> 5$, delete the oldest snapshot.
 
-4. **Step 4: Apply Modification**
-   - Perform the requested edit on the active file.
+4. **Step 4: Apply Modification to Active File**
+   - Apply user's requested edit on the active file.
 
-5. **Step 5: Synchronize Dual-Ledger**
-   - **Append to `.snapshots/manifest.json`**:
+5. **Step 5: Synchronize Dual-Ledger (Micro-Log Stream)**
+   - Update `.snapshots/<filepath>/manifest.json`:
      ```json
-     {
-       "version": "1.1.0",
-       "file": "relative/path/to/file.ext",
-       "snapshot": ".snapshots/file_v1.0.0.ext",
-       "type": "MINOR",
-       "timestamp": "ISO-8601 string",
-       "rationale": "Clear scientific or engineering justification for the edit",
-       "changes": [
-         "Key modification point 1",
-         "Key modification point 2"
-       ]
-     }
+     [
+       {"version": "v1.1.0", "snapshot": "v1.0.0.py", "impact": "MINOR", "ts": "2026-10-07T03:45:00+07:00", "summary": "Added JWT refresh token"}
+     ]
      ```
-   - **Append to `REVISION_LOG.md`**:
+   - Append 1 line to `REVISION_LOG.md` without reading previous entries:
      ```markdown
-     ## [v1.1.0] - YYYY-MM-DD HH:MM:SS
-     - **Target File:** `relative/path/to/file.ext`
-     - **Change Type:** MINOR
-     - **Archived Snapshot:** `.snapshots/file_v1.0.0.ext`
-     - **Rationale:** [Scientific / engineering reason]
-     - **Key Changes:**
-       - [Bullet point 1]
-       - [Bullet point 2]
-     ---
+     | 2026-10-07 03:45 | v1.1.0 | MINOR | auth_service.py | v1.0.0.py | Added JWT refresh token |
      ```
 
 ---
 
-### Workflow 2: Trackback & Deep Semantic Diff
+### Workflow 2: Deep Trackback & Semantic Diff
 
-When requested to review, inspect, or compare past revisions:
-
-1. Read `.snapshots/manifest.json` to find the target version and its snapshot location.
-2. Read the historical snapshot (`.snapshots/file_vX.Y.Z.ext`) and the active file.
-3. Perform comparative analysis:
-   - Identify behavioral regressions or removed invariants.
-   - Verify if modifications align with the stated rationale.
-   - Present a structured Before vs After summary table or Mermaid diagram.
+When requested to review or compare past revisions:
+1. Read `.snapshots/<filepath>/manifest.json` to identify available snapshot versions.
+2. Load target snapshot (e.g. `.snapshots/<filepath>/v1.0.0.<ext>`) and active file.
+3. Present concise Before vs After comparison highlighting algorithmic or interface changes.
 
 ---
 
-### Workflow 3: Safe Rollback / State Recovery
+### Workflow 3: Instant Rollback / Recovery
 
 When requested to revert or restore an earlier version:
-
-1. Locate the target version snapshot in `.snapshots/`.
-2. Take a safety backup of the *current* state as a PATCH bump (ensuring work-in-progress is never lost).
-3. Overwrite the active file with the content of the historical snapshot.
-4. Record the restoration event in `REVISION_LOG.md` and `manifest.json`.
+1. Locate target snapshot in `.snapshots/<filepath>/v<TARGET_VERSION>.<ext>`.
+2. Take safety snapshot of the *current* state (ensuring work-in-progress is never lost).
+3. Overwrite active file with content from the snapshot.
+4. Append 1-line rollback event to `REVISION_LOG.md`.

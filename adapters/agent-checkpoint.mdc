@@ -1,30 +1,28 @@
 ---
-description: Enforce pre-edit snapshots, SemVer impact classification, and dual-ledger audit trail
+description: Enforce pre-edit snapshots, SemVer classification, and token-optimized dual-ledger audit trail (v2.0)
 globs: *
 alwaysApply: true
 ---
 
-# Agent-Checkpoint Protocol (Cursor MDC Rule)
+# Agent-Checkpoint Protocol v2.0 (Cursor MDC Rule)
 # Place this file at .cursor/rules/agent-checkpoint.mdc
 
 Whenever you edit, refactor, or rewrite existing files in this workspace:
 
-1. PRE-EDIT ARCHIVING (MANDATORY):
-   - Before applying any diff or rewriting an existing file, make a copy of the current version to `.snapshots/<filename>_v<OLD_VERSION>.<ext>`.
-   - Never overwrite an existing file without this snapshot.
+1. PRE-EDIT ARCHIVING (BUCKETED):
+   - Before modifying an existing file, copy its current state to:
+     `.snapshots/<filepath>/v<OLD_VERSION>.<ext>`
+   - Retention Limit: Keep at most 5 latest snapshots per file bucket. Automatically prune older snapshots.
 
 2. SEMVER & IMPACT ASSESSMENT:
-   - MAJOR: Breaking logic, paradigm shift, structural rewrite.
-   - MINOR: New functions, additive features, new modules/sections.
-   - PATCH: Minor bug fix, typo, style tuning.
+   - MAJOR: Breaking logic, structural rewrite.
+   - MINOR: Additive features, new endpoints.
+   - PATCH: Bug fix, parameter tuning, typo.
 
-3. AUDIT TRAIL LOGGING:
-   - Record the change in `.snapshots/manifest.json`.
-   - Add a human-readable entry to `REVISION_LOG.md` detailing:
-     * Version and timestamp
-     * Snapshot file reference
-     * Engineering / scientific rationale
-     * Bullet points of what changed
+3. TOKEN-OPTIMIZED DUAL-LEDGER:
+   - Update sharded index at `.snapshots/<filepath>/manifest.json` (< 40 tokens).
+   - Append 1 line to `REVISION_LOG.md` using compact table format (do not re-read old log history):
+     | <YYYY-MM-DD HH:MM> | <Version> | <Impact> | <File> | <Snapshot> | <Short Rationale> |
 
-4. SAFETY FILTER:
-   - Do NOT snapshot build caches (node_modules, venv, __pycache__, .git) or heavy binaries (.pt, .onnx, datasets > 1 MB).
+4. SAFETY EXCLUSIONS:
+   - Exclude caches (node_modules, venv, __pycache__, .git) and heavy binaries/models (.pt, .onnx, datasets > 1 MB).

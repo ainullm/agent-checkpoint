@@ -1,9 +1,10 @@
-# AGENT-CHECKPOINT PROTOCOL (Windsurf Cascade)
+# AGENT-CHECKPOINT PROTOCOL v2.0 (Windsurf Cascade)
 # Place this file as .windsurfrules at your workspace root.
 
-Follow the Agent-Checkpoint protocol whenever modifying existing files:
+Follow the Agent-Checkpoint v2.0 protocol whenever modifying existing files:
 
-1. Snapshot First: Copy existing file to `.snapshots/<filename>_v<OLD_VERSION>.<ext>` before editing.
-2. Semantic Bump: Classify into MAJOR (breaking/architectural), MINOR (new feature/section), or PATCH (bugfix/typo).
-3. Dual-Ledger: Update `.snapshots/manifest.json` and append the rationale and diff list to `REVISION_LOG.md`.
-4. Scope Safety: Ignore binaries, heavy datasets (>1MB), and caches (venv, node_modules).
+1. Bucket Snapshot: Copy existing file to `.snapshots/<filepath>/v<OLD_VERSION>.<ext>` before editing.
+2. Sliding Window: Keep maximum 5 latest snapshot versions per file bucket.
+3. SemVer Bump: Classify into MAJOR (breaking/architectural), MINOR (additive feature), or PATCH (bugfix/typo).
+4. Token-Optimized Dual-Ledger: Update `.snapshots/<filepath>/manifest.json` and append 1 line to `REVISION_LOG.md` table without reading previous logs.
+5. Scope Safety: Ignore binaries, heavy datasets (> 1 MB), and caches (venv, node_modules).

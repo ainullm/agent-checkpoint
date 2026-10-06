@@ -1,24 +1,22 @@
-# AGENT-CHECKPOINT PROTOCOL (Cursor IDE)
+# AGENT-CHECKPOINT PROTOCOL v2.0 (Cursor IDE)
 # Place this file as .cursorrules at your workspace root.
 
-You must follow the Agent-Checkpoint protocol whenever you edit, refactor, or rewrite existing files:
+You must follow the Agent-Checkpoint v2.0 protocol whenever modifying existing files:
 
-1. PRE-EDIT ARCHIVING (MANDATORY):
-   - Before applying any diff or rewriting a file, make a copy of the existing version to `.snapshots/<filename>_v<OLD_VERSION>.<ext>`.
-   - Never overwrite an existing file without this snapshot.
+1. PRE-EDIT ARCHIVING (MANDATORY & BUCKETED):
+   - Before modifying any existing file, copy its current state to:
+     `.snapshots/<filepath>/v<OLD_VERSION>.<ext>`
+   - Retention Limit: Keep at most 5 latest snapshot versions per file bucket. Prune older versions automatically.
 
 2. SEMVER & IMPACT ASSESSMENT:
-   - MAJOR: Breaking logic, paradigm shift, structural rewrite.
-   - MINOR: New functions, additive features, new chapters/sections.
-   - PATCH: Minor bug fix, typo, style tuning.
+   - MAJOR: Breaking logic, structural rewrite, API shift.
+   - MINOR: Additive features, new functions/endpoints.
+   - PATCH: Bug fix, parameter tuning, typo, cleanup.
 
-3. AUDIT TRAIL LOGGING:
-   - Record the change in `.snapshots/manifest.json`.
-   - Add a human-readable entry to `REVISION_LOG.md` detailing:
-     * Version and timestamp
-     * Snapshot file reference
-     * Engineering / scientific rationale
-     * Bullet points of what changed
+3. TOKEN-OPTIMIZED DUAL-LEDGER:
+   - Update sharded index at `.snapshots/<filepath>/manifest.json` (< 40 tokens).
+   - Append 1 line to `REVISION_LOG.md` using the compact table format (do not re-read old log history):
+     | <YYYY-MM-DD HH:MM> | <Version> | <Impact> | <File> | <Snapshot> | <Short Rationale> |
 
-4. SAFETY FILTER:
-   - Do NOT snapshot build caches (node_modules, venv, __pycache__, .git) or heavy binaries (.pt, .onnx, big datasets).
+4. SAFETY EXCLUSIONS:
+   - Never snapshot caches (node_modules, venv, __pycache__, .git) or heavy binaries/models (.pt, .onnx, datasets > 1 MB).
