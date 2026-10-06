@@ -150,12 +150,12 @@ Once the adapter rule is placed, **there are no special CLI commands or syntax t
 
 **What the Agent Does Automatically (Behind the Scenes):**
 1. **Verifies File State:** Detects that `auth_service.py` already exists at version `v1.0.0`.
-2. **Takes Pre-Edit Snapshot:** Copies `auth_service.py` $\to$ `.snapshots/auth_service_v1.0.0.py`.
+2. **Takes Pre-Edit Snapshot:** Copies `auth_service.py` $\to$ `.snapshots/auth_service.py/v1.0.0.py`.
 3. **Triages SemVer Impact:** Evaluates the request. Because new features and parameters were introduced without breaking existing endpoints, it assigns `MINOR` ($\to$ `v1.1.0`).
-4. **Applies Edits:** Overwrites `auth_service.py` with the new JWT and rate-limiting code.
+4. **Applies Edits & Enforces Retention ($K \le 5$):** Overwrites `auth_service.py` with the new JWT and rate-limiting code, automatically pruning versions exceeding the 5 latest snapshots in `.snapshots/auth_service.py/`.
 5. **Synchronizes Dual-Ledger:**
-   * Appends machine entry to `.snapshots/manifest.json`.
-   * Appends human entry to `REVISION_LOG.md` detailing exact line ranges and architectural rationale.
+   * Updates sharded machine ledger `.snapshots/auth_service.py/manifest.json` (< 40 tokens).
+   * Appends a 1-line stream entry to `REVISION_LOG.md` (compact Markdown table) without loading historical logs.
 
 ---
 
@@ -167,9 +167,9 @@ If an agent hallucinates, deletes essential business logic, or introduces breaki
 > *"The changes in `auth_service.py` broke our test suite. Please roll back `auth_service.py` to `v1.0.0`."*
 
 **What the Agent Does:**
-1. Looks up `v1.0.0` in `.snapshots/manifest.json`.
-2. Restores `.snapshots/auth_service_v1.0.0.py` over `auth_service.py`.
-3. Logs the rollback event in `REVISION_LOG.md` (e.g., `PATCH: Rolled back auth_service.py from v1.1.0 to v1.0.0 due to test failure`).
+1. Looks up `v1.0.0` in `.snapshots/auth_service.py/manifest.json`.
+2. Restores `.snapshots/auth_service.py/v1.0.0.py` over `auth_service.py`.
+3. Appends the rollback event to `REVISION_LOG.md` (e.g., `PATCH | Rolled back auth_service.py from v1.1.0 to v1.0.0 due to test failure`).
 4. Your codebase is immediately returned to a clean, working state.
 
 ---
@@ -182,8 +182,8 @@ You return to your computer after an agent finished multiple autonomous edits:
 > *"Trackback: Compare `data_pipeline.py` with the version before the vector optimization. What algorithmic bottlenecks and functions were modified?"*
 
 **What the Agent Does:**
-1. Loads the historical snapshot `.snapshots/data_pipeline_v1.0.0.py` and active `data_pipeline.py`.
-2. Reads `REVISION_LOG.md` to retrieve the original intent.
+1. Loads the historical snapshot `.snapshots/data_pipeline.py/v1.0.0.py` and active `data_pipeline.py`.
+2. Inspects `.snapshots/data_pipeline.py/manifest.json` and `REVISION_LOG.md` to retrieve context.
 3. Produces a concise, semantic Before vs After diff report highlighting modified functions and algorithmic complexity changes without manual git diffing.
 
 ---
@@ -194,11 +194,11 @@ When using Cursor Composer, Windsurf Cascade, or Claude Code on multi-file promp
 > *"Implement a new billing checkout flow: update `routes.ts`, `stripe_client.py`, and `database.sql`."*
 
 The protocol executes sequentially per target file:
-* `.snapshots/routes_v1.0.0.ts`
-* `.snapshots/stripe_client_v1.0.0.py`
-* `.snapshots/database_v1.0.0.sql`
+* `.snapshots/routes.ts/v1.0.0.ts`
+* `.snapshots/stripe_client.py/v1.0.0.py`
+* `.snapshots/database.sql/v1.0.0.sql`
 
-Each modified file receives its own independent pre-edit snapshot and synchronized entry in `manifest.json` and `REVISION_LOG.md`.
+Each modified file receives its own hierarchical bucket, bounded sliding-window retention ($K \le 5$), sharded `manifest.json`, and stream-appended entry in `REVISION_LOG.md`.
 
 ---
 
@@ -295,25 +295,26 @@ Because `.snapshots/` contains historical backups rather than runtime code, **pr
 #### 1. Delete Snapshots Older than 30 Days
 * **PowerShell (Windows):**
   ```powershell
-  Get-ChildItem -Path .snapshots -File | Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-30) -and $_.Name -ne "manifest.json" } | Remove-Item
+  Get-ChildItem -Path .snapshots -Recurse -File | Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-30) -and $_.Name -ne "manifest.json" } | Remove-Item
   ```
 * **Bash / Zsh (Linux & macOS):**
   ```bash
   find .snapshots/ -type f ! -name "manifest.json" -mtime +30 -delete
   ```
 
-#### 2. Keep Only the Last 5 Versions Per File
+#### 2. Manual Retention Sweep (Optional)
+*With v2.0 Turbo, retention is already automated ($K \le 5$ per bucket). To run an extra manual purge:*
 * **Bash / Zsh:**
   ```bash
-  # Prunes older snapshot files while preserving manifest.json
-  ls -t .snapshots/*_*.* 2>/dev/null | tail -n +15 | xargs -r rm --
+  # Prunes snapshot files exceeding 5 latest per directory bucket
+  find .snapshots/ -mindepth 1 -maxdepth 1 -type d -exec bash -c 'ls -t "$0"/v* 2>/dev/null | tail -n +6 | xargs -r rm --' {} \;
   ```
 
-#### 3. Complete Reset (Nuclear Clean)
+#### 3. Complete Reset (Clean Slate)
 If a project is finalized and you want to reclaim 100% of snapshot space:
 ```bash
-# Deletes all snapshots and resets the machine ledger
-rm -rf .snapshots && mkdir .snapshots && echo "[]" > .snapshots/manifest.json
+# Deletes all snapshots
+rm -rf .snapshots
 ```
 
 ---
@@ -333,13 +334,13 @@ Agent-Checkpoint is completely language-agnostic and filetype-agnostic:
 
 ---
 
-## ⚠️ Known Boundaries (v1.0)
+## ⚠️ Known Boundaries (v2.0)
 
 | Limitation | Technical Context | Recommended Mitigation |
 | :--- | :--- | :--- |
 | **1. Small Model Compliance** | The protocol relies on system prompt instructions. Tier-1 models (Claude 3.5/3.7, GPT-4o, Gemini 2.0 Pro) exhibit **~100% compliance**. Smaller local models (7B/8B) may occasionally omit a snapshot during very long conversation windows. | Use capable reasoning models for major refactoring tasks. |
-| **2. Snapshot Sprawl** | If a single file is modified hundreds of times, `.snapshots/` accumulates individual files. Auto-pruning is not yet included in v1.0. | Plain-text files consume minimal storage (~10 MB/month), but periodic manual pruning of old patch versions is recommended using the scripts above. |
-| **3. File Deletion & Renaming** | Version 1.0 targets file content edits (`modify`). Deleting a file via terminal (`rm`) is not yet intercepted automatically. | Confirm manual verification before instructing agents to execute permanent file deletions. |
+| **2. Snapshot Sprawl** | **Resolved in v2.0:** Built-in Sliding Window Retention automatically keeps only the latest $K \le 5$ versions per file bucket, preventing uncontrolled growth. | No manual action required. For long-term archival, Git commits serve as permanent checkpoints. |
+| **3. File Deletion & Renaming** | The protocol targets file content edits (`modify`). Deleting a file via terminal (`rm`) is not yet intercepted automatically. | Confirm manual verification before instructing agents to execute permanent file deletions. |
 | **4. Multi-File Batch Edits** | Modifying 10 files in a single prompt creates 10 individual log entries rather than a single unified changeset. | Refactor modules in focused, logical increments. |
 
 ---

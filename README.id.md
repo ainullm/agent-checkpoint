@@ -150,12 +150,12 @@ Setelah file adapter terpasang, **tidak ada perintah CLI atau sintaks khusus yan
 
 **Yang Dilakukan AI Secara Otomatis di Balik Layar:**
 1. **Memeriksa Status Berkas:** Mendeteksi bahwa `auth_service.py` sudah ada pada versi `v1.0.0`.
-2. **Membuat Snapshot Pra-Edit:** Menyalin `auth_service.py` $\to$ `.snapshots/auth_service_v1.0.0.py`.
+2. **Membuat Snapshot Pra-Edit:** Menyalin `auth_service.py` $\to$ `.snapshots/auth_service.py/v1.0.0.py`.
 3. **Mengklasifikasikan Dampak SemVer:** Mengevaluasi perubahan. Karena menambahkan fitur baru tanpa merusak antarmuka lama, AI mengkategorikannya sebagai `MINOR` ($\to$ `v1.1.0`).
-4. **Menerapkan Modifikasi:** Menimpa `auth_service.py` dengan kode baru yang diminta.
+4. **Menerapkan Modifikasi & Memangkas Retensi ($K \le 5$):** Menimpa `auth_service.py` dengan kode baru yang diminta, dan secara otomatis memangkas snapshot tertua jika folder `.snapshots/auth_service.py/` melebihi 5 versi.
 5. **Menyelaraskan Buku Besar Ganda (*Dual-Ledger*):**
-   * Menambahkan indeks mesin ke `.snapshots/manifest.json`.
-   * Menambahkan catatan teknis ke `REVISION_LOG.md` lengkap dengan rentang baris dan rasional arsitekturnya.
+   * Memperbarui indeks mesin lokal terfragmentasi `.snapshots/auth_service.py/manifest.json` (< 40 token).
+   * Menambahkan baris ringkas 1-baris ke tabel `REVISION_LOG.md` tanpa perlu membaca ulang riwayat masa lalu.
 
 ---
 
@@ -167,9 +167,9 @@ Jika AI berhalusinasi, menghapus logika bisnis yang penting, atau menimbulkan er
 > *"Perubahan pada `auth_service.py` menyebabkan unit test gagal. Tolong batalkan perubahan dan kembalikan `auth_service.py` ke versi `v1.0.0`."*
 
 **Yang Dilakukan AI:**
-1. Mencari versi `v1.0.0` di dalam `.snapshots/manifest.json`.
-2. Menyalin kembali `.snapshots/auth_service_v1.0.0.py` menimpa file aktif `auth_service.py`.
-3. Mencatat aksi rollback di `REVISION_LOG.md` (misal: `PATCH: Rolled back auth_service.py dari v1.1.0 ke v1.0.0 karena kegagalan pengujian`).
+1. Mencari versi `v1.0.0` di dalam `.snapshots/auth_service.py/manifest.json`.
+2. Menyalin kembali `.snapshots/auth_service.py/v1.0.0.py` menimpa file aktif `auth_service.py`.
+3. Menambahkan catatan rollback di `REVISION_LOG.md` (misal: `PATCH | Rolled back auth_service.py dari v1.1.0 ke v1.0.0 karena kegagalan pengujian`).
 4. Kode Anda seketika kembali ke kondisi stabil tanpa Anda perlu panik mencari baris kode yang hilang.
 
 ---
@@ -182,8 +182,8 @@ Ketika Anda kembali ke komputer setelah AI selesai melakukan banyak revisi bertu
 > *"Trackback: Bandingkan `data_pipeline.py` dengan versi sebelum optimasi vektor. Jelaskan fungsi mana saja dan kompleksitas algoritma apa yang berubah?"*
 
 **Yang Dilakukan AI:**
-1. Membaca snapshot lama `.snapshots/data_pipeline_v1.0.0.py` dan file aktif `data_pipeline.py`.
-2. Membaca `REVISION_LOG.md` untuk memahami konteks perubahan.
+1. Membaca snapshot lama `.snapshots/data_pipeline.py/v1.0.0.py` dan file aktif `data_pipeline.py`.
+2. Memeriksa `.snapshots/data_pipeline.py/manifest.json` dan `REVISION_LOG.md` untuk memahami konteks perubahan.
 3. Menyajikan laporan komparasi *Before vs After* yang jelas, menyoroti fungsi yang berubah tanpa Anda harus menjalankan perintah `git diff` yang rumit.
 
 ---
@@ -194,11 +194,11 @@ Saat menggunakan fitur Cursor Composer atau Claude Code untuk proyek multi-file:
 > *"Buat alur checkout pembayaran baru: perbarui `routes.ts`, `stripe_client.py`, dan `database.sql`."*
 
 Protokol ini berjalan secara berurutan dan terisolasi untuk setiap target file:
-* `.snapshots/routes_v1.0.0.ts`
-* `.snapshots/stripe_client_v1.0.0.py`
-* `.snapshots/database_v1.0.0.sql`
+* `.snapshots/routes.ts/v1.0.0.ts`
+* `.snapshots/stripe_client.py/v1.0.0.py`
+* `.snapshots/database.sql/v1.0.0.sql`
 
-Masing-masing file mendapatkan cadangan tersendiri dan tercatat rapi di `manifest.json` serta `REVISION_LOG.md`.
+Masing-masing file mendapatkan folder bucket terpisah, batas retensi sliding window ($K \le 5$), file `manifest.json` lokal terfragmentasi, dan pencatatan 1-baris pada `REVISION_LOG.md`.
 
 ---
 
@@ -295,25 +295,26 @@ Karena folder `.snapshots/` hanya berisi arsip riwayat dan bukan kode yang sedan
 #### 1. Menghapus Snapshot yang Berumur Lebih dari 30 Hari
 * **PowerShell (Windows):**
   ```powershell
-  Get-ChildItem -Path .snapshots -File | Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-30) -and $_.Name -ne "manifest.json" } | Remove-Item
+  Get-ChildItem -Path .snapshots -Recurse -File | Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-30) -and $_.Name -ne "manifest.json" } | Remove-Item
   ```
 * **Bash / Zsh (Linux & macOS):**
   ```bash
   find .snapshots/ -type f ! -name "manifest.json" -mtime +30 -delete
   ```
 
-#### 2. Menyimpan Hanya 5 Versi Terakhir per File
+#### 2. Pembersihan Retensi Manual (Opsional)
+*Pada v2.0 Turbo, retensi sudah otomatis berjalan ($K \le 5$ per bucket). Untuk pembersihan manual tambahan:*
 * **Bash / Zsh:**
   ```bash
-  # Menghapus file snapshot lama dan tetap mempertahankan manifest.json
-  ls -t .snapshots/*_*.* 2>/dev/null | tail -n +15 | xargs -r rm --
+  # Menghapus file snapshot yang melebihi 5 versi terbaru per folder bucket
+  find .snapshots/ -mindepth 1 -maxdepth 1 -type d -exec bash -c 'ls -t "$0"/v* 2>/dev/null | tail -n +6 | xargs -r rm --' {} \;
   ```
 
 #### 3. Reset Total (Membersihkan Bersih)
 Jika sebuah proyek sudah selesai dan Anda ingin mengosongkan folder snapshot:
 ```bash
-# Menghapus seluruh snapshot dan mereset indeks mesin
-rm -rf .snapshots && mkdir .snapshots && echo "[]" > .snapshots/manifest.json
+# Menghapus seluruh snapshot
+rm -rf .snapshots
 ```
 
 ---
@@ -333,13 +334,13 @@ Agent-Checkpoint sepenuhnya independen terhadap bahasa dan format berkas:
 
 ---
 
-## ⚠️ Batasan yang Diketahui (Known Boundaries v1.0)
+## ⚠️ Batasan yang Diketahui (Known Boundaries v2.0)
 
 | Batasan | Konteks Teknis | Saran Mitigasi |
 | :--- | :--- | :--- |
 | **1. Kepatuhan Model Kecil** | Protokol berbasis instruksi sistem. Model tier-1 (Claude 3.5/3.7, GPT-4o, Gemini 2.0 Pro) memiliki kepatuhan **~100%**. Model kecil lokal (7B/8B) sesekali bisa lupa membuat snapshot jika sesi chat sangat panjang. | Gunakan model cerdas untuk tugas refactoring utama. |
-| **2. Penumpukan Snapshot** | Jika file diedit ratusan kali, folder `.snapshots/` akan terus bertambah. Fitur pembersihan otomatis (*auto-pruning*) belum disertakan di v1.0. | File teks memakan storage sangat sedikit (~10 MB/bln), tetapi disarankan membersihkan versi lama secara berkala menggunakan perintah di atas. |
-| **3. Operasi Delete / Rename** | Versi 1.0 berfokus pada edit isi (*modify*). Menghapus file lewat terminal (`rm`) belum dicegat secara otomatis. | Lakukan konfirmasi manual sebelum menyuruh AI menghapus file secara permanen. |
+| **2. Penumpukan Snapshot** | **Terselesaikan di v2.0:** Mekanisme retensi *Sliding Window* otomatis membatasi maksimal hanya $K \le 5$ versi terbaru per folder bucket file, mencegah pertumbuhan ruang tak terbatas. | Tidak memerlukan aksi manual. Untuk arsip jangka panjang, *commit* Git berfungsi sebagai checkpoint permanen. |
+| **3. Operasi Delete / Rename** | Protokol berfokus pada edit isi (*modify*). Menghapus file lewat terminal (`rm`) belum dicegat secara otomatis. | Lakukan konfirmasi manual sebelum menyuruh AI menghapus file secara permanen. |
 | **4. Refactoring Multi-File Sekaligus** | Mengubah 10 file dalam 1 prompt akan menghasilkan 10 entri log terpisah daripada 1 entri grup (*changeset*). | Lakukan refactor bertahap per modul. |
 
 ---
