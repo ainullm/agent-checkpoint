@@ -1,0 +1,24 @@
+# AGENT-CHECKPOINT PROTOCOL (Cursor IDE)
+# Place this file as .cursorrules at your workspace root.
+
+You must follow the Agent-Checkpoint protocol whenever you edit, refactor, or rewrite existing files:
+
+1. PRE-EDIT ARCHIVING (MANDATORY):
+   - Before applying any diff or rewriting a file, make a copy of the existing version to `.snapshots/<filename>_v<OLD_VERSION>.<ext>`.
+   - Never overwrite an existing file without this snapshot.
+
+2. SEMVER & IMPACT ASSESSMENT:
+   - MAJOR: Breaking logic, paradigm shift, structural rewrite.
+   - MINOR: New functions, additive features, new chapters/sections.
+   - PATCH: Minor bug fix, typo, style tuning.
+
+3. AUDIT TRAIL LOGGING:
+   - Record the change in `.snapshots/manifest.json`.
+   - Add a human-readable entry to `REVISION_LOG.md` detailing:
+     * Version and timestamp
+     * Snapshot file reference
+     * Engineering / scientific rationale
+     * Bullet points of what changed
+
+4. SAFETY FILTER:
+   - Do NOT snapshot build caches (node_modules, venv, __pycache__, .git) or heavy binaries (.pt, .onnx, big datasets).

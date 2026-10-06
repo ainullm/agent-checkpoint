@@ -1,0 +1,31 @@
+# Python & OS
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.DS_Store
+Thumbs.db
+
+# Virtual Environments
+venv/
+.venv/
+env/
+
+# Node & Package Managers
+node_modules/
+dist/
+build/
+
+# Heavy ML Models & Datasets (Safety Guardrails)
+*.pt
+*.pth
+*.onnx
+*.safetensors
+*.ckpt
+*.h5
+*.parquet
+
+# Note on .snapshots/:
+# By default, you may choose to commit .snapshots/ to Git to preserve historical
+# backups in VCS, or add '.snapshots/' below if you prefer keeping snapshots purely local.
+# .snapshots/
