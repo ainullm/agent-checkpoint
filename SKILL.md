@@ -17,12 +17,23 @@ A universal, zero-dependency audit and safety protocol for autonomous AI coding 
 2. **Dual-Ledger Synchronization:**
    - **Machine Index (`.snapshots/manifest.json`):** Fast, compact JSON array enabling agents to discover past revisions and calculate diffs without token bloat.
    - **Human-Readable Audit Trail (`REVISION_LOG.md`):** Rich Markdown changelog detailing timestamps, SemVer impacts, rationale, and bullet-point changes.
-3. **Safety & Storage Guardrails:**
-   - **Always Snapshot:** Plain-text documents (`.md`, `.tex`, `.rst`, `.txt`), source code (`.py`, `.ts`, `.js`, `.go`, `.rs`, `.cpp`, `.sh`), configurations (`.json`, `.yaml`, `.yml`, `.toml`, `.env.example`).
-   - **Never Snapshot (Strict Exclusion):**
-     - Heavy binary assets (models `.pt`, `.pth`, `.onnx`, `.bin`, `.safetensors`, `.ckpt`)
-     - Large datasets (`.csv > 5MB`, `.parquet`, `.h5`, `.zip`, `.tar.gz`)
-     - Build artifacts & dependency caches (`node_modules/`, `venv/`, `.venv/`, `__pycache__/`, `dist/`, `build/`, `.git/`)
+3. **Universal Scope & Smart Storage Guardrails:**
+   - **Full Text & Code Coverage (Always Snapshotted):**
+     * Source Code & Scripts: Python (`.py`), TypeScript (`.ts`, `.tsx`), JavaScript (`.js`), Go (`.go`), Rust (`.rs`), C/C++ (`.c`, `.cpp`), Java, PHP, Ruby, Swift, Kotlin, Dart, Shell (`.sh`, `.ps1`), Lua, R, Julia.
+     * Research & Notebooks: Jupyter Notebooks (`.ipynb`), Typst (`.typ`), LaTeX (`.tex`, `.bib`), Markdown (`.md`), RestructuredText (`.rst`).
+     * Diagrams as Code: Mermaid (`.mmd`), PlantUML (`.puml`), Graphviz (`.dot`), SVG (`.svg`), Draw.io (`.drawio`), Excalidraw (`.excalidraw`).
+     * API Schemas & Contracts: Protobuf (`.proto`), GraphQL (`.graphql`), Prisma (`.prisma`), OpenAPI (`.yaml`), Thrift (`.thrift`).
+     * Graphics & Shaders: GLSL (`.glsl`), HLSL (`.hlsl`), WGSL (`.wgsl`), GDScript (`.gd`).
+     * Hardware & Embedded: Verilog (`.v`, `.sv`), VHDL (`.vhd`), Assembly (`.asm`), Arduino (`.ino`), CMake.
+     * Policies & Configs: OPA Rego (`.rego`), CUE (`.cue`), JSON, YAML, TOML, Dockerfile.
+   - **Smart 1 MB Threshold for Tabular Data:**
+     * Small data seeds/fixtures (`.csv`, `.tsv`, `.jsonl`) are snapshotted ONLY if file size $\le 1\text{ MB}$.
+     * If file size $> 1\text{ MB}$, the agent logs the change metadata in `REVISION_LOG.md` and `manifest.json` (with `"snapshot": null, "reason": "exceeds_1mb_cap"`) without duplicating the raw file, strictly preventing disk bloat.
+   - **Strict Exclusions (Never Snapshotted):**
+     * Machine Learning weights & checkpoints (`.pt`, `.pth`, `.onnx`, `.bin`, `.safetensors`, `.ckpt`).
+     * Large tabular data & binaries ($> 1\text{ MB}$, `.parquet`, `.h5`, `.arrow`, `.feather`).
+     * Executables, libraries & archives (`.exe`, `.dll`, `.so`, `.zip`, `.tar.gz`, video/audio).
+     * Dependency caches & build outputs (`node_modules/`, `venv/`, `.venv/`, `__pycache__/`, `target/`, `dist/`, `build/`, `.git/`).
 
 ---
 

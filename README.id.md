@@ -183,16 +183,44 @@ Demi transparansi rekayasa perangkat lunak, versi `v1.0` memiliki batasan beriku
 
 ---
 
-## 🛡️ Batasan Kapasitas Penyimpanan
+## 🌐 Dukungan File Universal & Batasan Penyimpanan Cerdas
 
-| Kategori Berkas | Kebijakan Snapshot | Contoh Ekstensi |
+Agent-Checkpoint **mendukung semua bahasa pemrograman dan jenis file teks (*universal & agnostic*)**. Aturan dasarnya sangat sederhana:  
+> **"Jika suatu file dapat dibuka dan diedit di editor teks atau editor kode, Agent-Checkpoint melindunginya."**
+
+### ✅ File Apa Saja yang Otomatis Di-snapshot? (Mendukung 100+ Format)
+
+* **Bahasa Pemrograman & Sistem:** Python (`.py`), TypeScript (`.ts`, `.tsx`), JavaScript (`.js`, `.jsx`), Go (`.go`), Rust (`.rs`), C/C++ (`.c`, `.cpp`, `.h`, `.hpp`), C# (`.cs`), Java (`.java`), PHP (`.php`), Ruby (`.rb`), Swift (`.swift`), Kotlin (`.kt`), Dart (`.dart`), Scala (`.scala`), Shell (`.sh`, `.bash`, `.zsh`), PowerShell (`.ps1`, `.bat`), Lua (`.lua`), R (`.r`), Julia (`.jl`).
+* **Web & Antarmuka Frontend:** HTML (`.html`), CSS (`.css`), SCSS/SASS (`.scss`), Vue (`.vue`), Svelte (`.svelte`), XML (`.xml`), SVG (`.svg`).
+* **Data Science & Riset Modern:** Jupyter Notebooks (`.ipynb`), Typst (`.typ`), LaTeX (`.tex`, `.bib`, `.sty`), Markdown (`.md`, `.mdx`), RestructuredText (`.rst`), AsciiDoc (`.adoc`), Plain text (`.txt`).
+* **Diagrams & Visual Berbasis Kode:** Mermaid (`.mmd`, `.mermaid`), PlantUML (`.puml`), Graphviz (`.dot`), Draw.io XML (`.drawio`), Excalidraw JSON (`.excalidraw`).
+* **Skema API, Kontrak & Protokol:** Protobuf (`.proto`), GraphQL (`.graphql`, `.gql`), Prisma (`.prisma`), OpenAPI / Swagger (`.yaml`, `.json`), Apache Thrift (`.thrift`), FlatBuffers (`.fbs`).
+* **Game Development & Shaders:** GLSL (`.glsl`, `.frag`, `.vert`), HLSL (`.hlsl`), WGSL (`.wgsl`), Godot GDScript (`.gd`, `.tscn`), Unreal Engine text configs (`.ini`).
+* **Hardware & Sistem Tertanam (Embedded):** Verilog (`.v`, `.vh`), SystemVerilog (`.sv`), VHDL (`.vhd`), Assembly (`.asm`, `.s`), Arduino (`.ino`), CMake (`CMakeLists.txt`, `.cmake`).
+* **DevOps, IaC & Kebijakan Keamanan:** Open Policy Agent Rego (`.rego`), CUE (`.cue`), Terraform (`.tf`), Kubernetes manifests, Dockerfile, Makefile, JSON, YAML, TOML, SQL (`.sql`).
+
+---
+
+### 🛡️ Batasan Penyimpanan Cerdas (Garansi Nol Beban Disk)
+
+Untuk memperluas dukungan format tanpa membuat harddisk Anda sesak, protokol menerapkan **Aturan Bertingkat (*Tiered Ingestion Rules*)**:
+
+#### 1. 📏 Ambang Batas 1 MB untuk Data Tabular (*Smart 1 MB Cap*)
+* File data kecil, mock data uji, dan data seed (`.csv`, `.tsv`, `.jsonl`, `.ndjson`) **hanya di-snapshot jika ukurannya $\le 1\text{ MB}$**.
+* Jika ukuran file melebihi $1\text{ MB}$ (contoh: dataset training 100 MB), AI **secara otomatis tidak menduplikasi filenya**, melainkan hanya mencatat metadata-nya (nama file dan waktu perubahan) di `REVISION_LOG.md` tanpa memakan ruang harddisk.
+
+#### 2. 🚫 Pengecualian Ketat File Biner
+Protokol secara ketat menolak pencadangan file biner berat dan direktori dependensi:
+
+| Kategori Berkas | Kebijakan Snapshot | Contoh Berkas (Tidak Pernah Diarsip) |
 | :--- | :--- | :--- |
-| **Teks & Kode Sumber** | ✅ **Diarsipkan Otomatis** | Python (`.py`), TypeScript (`.ts`), Markdown (`.md`), LaTeX (`.tex`), Config (`.json`, `.yaml`) |
-| **File Biner Berat** | 🚫 **Dikecualikan (Tidak Diarsip)** | Bobot Model ML (`.pt`, `.onnx`, `.bin`), Dataset Besar (`> 5MB`, `.parquet`, `.h5`) |
-| **Folder Cache / Dependensi** | 🚫 **Dikecualikan (Aman)** | `node_modules/`, `venv/`, `__pycache__/`, `build/`, `.git/` |
+| **Model AI & Machine Learning** | 🚫 **Dikecualikan** | Bobot model & checkpoint (`.pt`, `.pth`, `.onnx`, `.safetensors`, `.bin`, `.ckpt`) |
+| **Dataset Berukuran Besar** | 🚫 **Dikecualikan** | Data tabular berat ($> 1\text{ MB}$, `.parquet`, `.h5`, `.arrow`, `.feather`, `.csv` raksasa) |
+| **Biner Terkompilasi & Media** | 🚫 **Dikecualikan** | File biner (`.exe`, `.dll`, `.so`), arsip (`.zip`, `.tar.gz`), video/audio |
+| **Folder Cache & Dependensi** | 🚫 **Dikecualikan** | `node_modules/`, `venv/`, `.venv/`, `__pycache__/`, `target/`, `dist/`, `build/`, `.git/` |
 
 **Estimasi Ruang Penyimpanan:**  
-Untuk 500 kali modifikasi berkas dalam sebulan, konsumsi disk rata-rata hanya berkisar antara **7.5 MB hingga 15 MB**. Sangat kecil untuk kapasitas penyimpanan modern.
+Karena berkas kode sumber teks berukuran sangat kecil (rata-rata 5 KB s.d. 50 KB), bahkan **500 kali modifikasi berkas dalam sebulan** hanya memakan sekitar **~7.5 MB hingga 15 MB** ruang harddisk. Praktis tidak membebani disk modern sama sekali.
 
 ---
 

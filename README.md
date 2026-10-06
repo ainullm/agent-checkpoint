@@ -183,16 +183,44 @@ In the interest of software engineering transparency, version `v1.0` has the fol
 
 ---
 
-## 🛡️ Storage & Safety Guardrails
+## 🌐 Universal File Support & Smart Storage Guardrails
 
-| Category | Policy | Examples |
+Agent-Checkpoint is **completely language-agnostic and filetype-agnostic**. The core rule is simple:  
+> **"If it can be opened and edited in a text/code editor, Agent-Checkpoint protects it."**
+
+### ✅ What Gets Automatically Snapshotted? (100+ Formats Supported)
+
+* **Programming & Systems:** Python (`.py`), TypeScript (`.ts`, `.tsx`), JavaScript (`.js`, `.jsx`), Go (`.go`), Rust (`.rs`), C/C++ (`.c`, `.cpp`, `.h`, `.hpp`), C# (`.cs`), Java (`.java`), PHP (`.php`), Ruby (`.rb`), Swift (`.swift`), Kotlin (`.kt`), Dart (`.dart`), Scala (`.scala`), Shell (`.sh`, `.bash`, `.zsh`), PowerShell (`.ps1`, `.bat`), Lua (`.lua`), R (`.r`), Julia (`.jl`).
+* **Web & Modern Frontend:** HTML (`.html`), CSS (`.css`), SCSS/SASS (`.scss`), Vue (`.vue`), Svelte (`.svelte`), XML (`.xml`), SVG (`.svg`).
+* **Data Science & Research:** Jupyter Notebooks (`.ipynb`), Typst (`.typ`), LaTeX (`.tex`, `.bib`, `.sty`), Markdown (`.md`, `.mdx`), RestructuredText (`.rst`), AsciiDoc (`.adoc`), Plain text (`.txt`).
+* **Diagrams & Visuals as Code:** Mermaid (`.mmd`, `.mermaid`), PlantUML (`.puml`), Graphviz (`.dot`), Draw.io XML (`.drawio`), Excalidraw JSON (`.excalidraw`).
+* **API Schemas & Contracts:** Protobuf (`.proto`), GraphQL (`.graphql`, `.gql`), Prisma (`.prisma`), OpenAPI / Swagger (`.yaml`, `.json`), Apache Thrift (`.thrift`), FlatBuffers (`.fbs`).
+* **Game Development & Shaders:** GLSL (`.glsl`, `.frag`, `.vert`), HLSL (`.hlsl`), WGSL (`.wgsl`), Godot GDScript (`.gd`, `.tscn`), Unreal Engine text configs (`.ini`).
+* **Hardware & Embedded:** Verilog (`.v`, `.vh`), SystemVerilog (`.sv`), VHDL (`.vhd`), Assembly (`.asm`, `.s`), Arduino (`.ino`), CMake (`CMakeLists.txt`, `.cmake`).
+* **DevOps, IaC & Policies:** Open Policy Agent Rego (`.rego`), CUE (`.cue`), Terraform (`.tf`), Kubernetes manifests, Dockerfile, Makefile, JSON, YAML, TOML, SQL (`.sql`).
+
+---
+
+### 🛡️ Smart Storage Guardrails (Zero-Bloat Guarantee)
+
+To expand file flexibility without ever overwhelming your hard drive, the protocol enforces **Tiered Ingestion Rules**:
+
+#### 1. 📏 Smart 1 MB Cap for Tabular Data
+* Small mock data, test fixtures, and schema seeds (`.csv`, `.tsv`, `.jsonl`, `.ndjson`) are **automatically snapshotted ONLY if file size $\le 1\text{ MB}$**.
+* If a dataset exceeds $1\text{ MB}$ (e.g., a 100 MB training dataset), the agent **skips raw file copying** and logs metadata only in `REVISION_LOG.md` (recording timestamp and filename without disk bloat).
+
+#### 2. 🚫 Strict Binary Exclusions
+The protocol strictly avoids archiving heavy binary assets and dependency caches:
+
+| Category | Policy | Examples (Never Snapshotted) |
 | :--- | :--- | :--- |
-| **Plain Text & Source Code** | ✅ **Auto-Snapshotted** | Python (`.py`), TypeScript (`.ts`), Markdown (`.md`), LaTeX (`.tex`), Configs (`.json`, `.yaml`) |
-| **Heavy Binaries** | 🚫 **Excluded (Never Snapshotted)** | Model weights (`.pt`, `.onnx`, `.bin`), Large datasets (`> 5MB`, `.parquet`, `.h5`) |
-| **Build & Cache Directories** | 🚫 **Excluded (Safe)** | `node_modules/`, `venv/`, `__pycache__/`, `build/`, `.git/` |
+| **Heavy ML & AI Models** | 🚫 **Excluded** | Weights & checkpoints (`.pt`, `.pth`, `.onnx`, `.safetensors`, `.bin`, `.ckpt`) |
+| **Large Data Files** | 🚫 **Excluded** | Heavy data ($> 1\text{ MB}$, `.parquet`, `.h5`, `.arrow`, `.feather`, large `.csv`) |
+| **Compiled Binaries & Media** | 🚫 **Excluded** | Executables (`.exe`, `.dll`, `.so`), archives (`.zip`, `.tar.gz`), video/audio |
+| **Dependency & Build Caches** | 🚫 **Excluded** | `node_modules/`, `venv/`, `.venv/`, `__pycache__/`, `target/`, `dist/`, `build/`, `.git/` |
 
 **Storage Footprint:**  
-For 500 active file edits in a month, total storage overhead typically ranges between **7.5 MB and 15 MB**. Negligible on modern drives.
+Because plain-text source files are exceptionally small (typically 5 KB – 50 KB), even **500 active file edits per month** will consume only **~7.5 MB to 15 MB** of disk space. Negligible on modern hard drives.
 
 ---
 
