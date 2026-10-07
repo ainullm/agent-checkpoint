@@ -73,9 +73,9 @@ flowchart TD
         I --> K["Stream Append 1 Line to:\nREVISION_LOG.md (Compact Table)"]
     end
 
-    subgraph Retrieval ["4. Trackback & Instant Rollback"]
-        L["User: 'Rollback auth.py to v1.0.0'"] --> J
-        J --> M["Restore Snapshot Over Active File in 3 Seconds"]
+    subgraph Retrieval ["4. Trackback & Granular Rollback"]
+        L["User: 'Rollback src/auth/service.py'"] --> J
+        J --> M["Restore Snapshot Over Target File\n(Untouched Files Preserved)"]
     end
 
     style J fill:#1b4332,color:#fff,stroke:#fff
@@ -179,8 +179,35 @@ Suppose an autonomous agent modifies both `src/auth/service.py` and `src/billing
 **The Git Dilemma:**  
 A blunt `git reset --hard` or `git checkout .` wipes out your entire working directory, discarding the good, working code in `src/billing/service.py` alongside the broken auth code.
 
-**The Agent-Checkpoint Solution:**  
-Ask your AI agent for a granular, selective rollback:
+**The Git Dilemma vs The Agent-Checkpoint Solution:**
+
+```mermaid
+flowchart LR
+    subgraph AIOutput ["Concurrent AI Edits"]
+        A1["src/auth/service.py\n(Broken Syntax) ❌"]
+        A2["src/billing/service.py\n(Good Webhook) ✅"]
+    end
+
+    subgraph GitReset ["Traditional Git (`git reset --hard`)"]
+        G1["Reverts auth.py"]
+        G2["💥 DISCARDS BILLING TOO!\n(Working features lost)"]
+    end
+
+    subgraph Checkpoint ["Agent-Checkpoint Selective Restore"]
+        C1["🔄 Restores auth.py to v1.0.0\n(Hash matches checkpoint)"]
+        C2["🛡️ PRESERVES BILLING INTACT!\n(Hash unchanged)"]
+    end
+
+    A1 --> GitReset
+    A2 --> GitReset
+    A1 --> C1
+    A2 --> C2
+
+    style G2 fill:#591d1d,color:#fff,stroke:#fff
+    style C2 fill:#1b4332,color:#fff,stroke:#fff
+```
+
+**What You Ask Your Agent:**
 > *"The changes in `src/auth/service.py` broke the test suite. Please roll back `src/auth/service.py` to `v1.0.0`, but keep `src/billing/service.py` untouched."*
 
 **What the Agent Does:**

@@ -73,9 +73,9 @@ flowchart TD
         I --> K["Stream Append 1 Baris ke:\nREVISION_LOG.md (Tabel Ringkas)"]
     end
 
-    subgraph Retrieval ["4. Trackback & Rollback Instan"]
-        L["User: 'Rollback auth.py ke v1.0.0'"] --> J
-        J --> M["Pulihkan File Seketika dalam 3 Detik"]
+    subgraph Retrieval ["4. Trackback & Rollback Granular"]
+        L["Pengguna: 'Rollback src/auth/service.py'"] --> J
+        J --> M["Pulihkan Snapshot ke Berkas Target\n(Berkas Lain Tetap Aman)"]
     end
 
     style J fill:#1b4332,color:#fff,stroke:#fff
@@ -179,8 +179,35 @@ Bayangkan AI mengubah `src/auth/service.py` dan `src/billing/service.py` sekalig
 **Dilema Menggunakan Git:**  
 Perintah kasar seperti `git reset --hard` atau `git checkout .` akan menghapus seluruh isi direktori kerja Anda, sehingga kode `billing` yang sudah bagus dan capek-capek dibuat akan ikut lenyap bersama kode `auth` yang rusak.
 
-**Solusi Agent-Checkpoint:**  
-Cukup minta AI melakukan pembatalan (*rollback*) terarah secara selektif:
+**Dilema Git vs Solusi Agent-Checkpoint:**
+
+```mermaid
+flowchart LR
+    subgraph AIOutput ["Perubahan AI Sekaligus"]
+        A1["src/auth/service.py\n(Sintaks Rusak) ❌"]
+        A2["src/billing/service.py\n(Fitur Stripe Bagus) ✅"]
+    end
+
+    subgraph GitReset ["Git Tradisional (`git reset --hard`)"]
+        G1["Membatalkan auth.py"]
+        G2["💥 BILLING JUGA IKUT LENYAP!\n(Kode bagus terhapus)"]
+    end
+
+    subgraph Checkpoint ["Rollback Selektif Agent-Checkpoint"]
+        C1["🔄 Pulihkan auth.py ke v1.0.0\n(Hash identik dengan snapshot)"]
+        C2["🛡️ BILLING TETAP AMAN UTUH!\n(Hash tidak berubah)"]
+    end
+
+    A1 --> GitReset
+    A2 --> GitReset
+    A1 --> C1
+    A2 --> C2
+
+    style G2 fill:#591d1d,color:#fff,stroke:#fff
+    style C2 fill:#1b4332,color:#fff,stroke:#fff
+```
+
+**Perintah (Prompt) yang Anda Berikan ke AI:**
 > *"Perubahan pada `src/auth/service.py` merusak unit test. Tolong kembalikan `src/auth/service.py` ke `v1.0.0`, tapi biarkan `src/billing/service.py` tetap seperti sekarang tanpa diubah."*
 
 **Yang Dilakukan AI:**
