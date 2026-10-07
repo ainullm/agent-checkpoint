@@ -139,42 +139,77 @@ Run the command matching your editor inside your project root:
 
 ## 🎮 Comprehensive Usage Guide & Real-World Workflows
 
-Once the adapter rule is placed, **there are no special CLI commands or syntax to memorize**. You interact with your AI agent naturally. Here are the 4 standard usage workflows:
+Once the adapter rule is placed, **there are no special CLI commands or syntax to memorize**. You interact with your AI agent naturally. Here are the 4 core workflows demonstrating everyday usage, zero-collision directory handling, and verifiable selective rollback:
 
 ---
 
 ### Workflow 1: Everyday Feature Addition & Refactoring
 
 **What You Ask Your Agent:**
-> *"Refactor `auth_service.py` to support JWT refresh tokens, add rate limiting with Redis, and improve error logging."*
+> *"Refactor `src/auth/service.py` to support JWT refresh tokens, add rate limiting with Redis, and improve error logging."*
 
 **What the Agent Does Automatically (Behind the Scenes):**
-1. **Verifies File State:** Detects that `auth_service.py` already exists at version `v1.0.0`.
-2. **Takes Pre-Edit Snapshot:** Copies `auth_service.py` $\to$ `.snapshots/auth_service.py/v1.0.0.py`.
+1. **Verifies File State:** Detects that `src/auth/service.py` already exists at version `v1.0.0`.
+2. **Takes Pre-Edit Snapshot:** Copies `src/auth/service.py` $\to$ `.snapshots/src/auth/service.py/v1.0.0.py`.
 3. **Triages SemVer Impact:** Evaluates the request. Because new features and parameters were introduced without breaking existing endpoints, it assigns `MINOR` ($\to$ `v1.1.0`).
-4. **Applies Edits & Enforces Retention ($K \le 5$):** Overwrites `auth_service.py` with the new JWT and rate-limiting code, automatically pruning versions exceeding the 5 latest snapshots in `.snapshots/auth_service.py/`.
+4. **Applies Edits & Enforces Retention ($K \le 5$):** Overwrites `src/auth/service.py` with the new JWT and rate-limiting code, automatically pruning versions exceeding the 5 latest snapshots in `.snapshots/src/auth/service.py/`.
 5. **Synchronizes Dual-Ledger:**
-   * Updates sharded machine ledger `.snapshots/auth_service.py/manifest.json` (< 40 tokens).
+   * Updates sharded machine ledger `.snapshots/src/auth/service.py/manifest.json` (< 40 tokens).
    * Appends a 1-line stream entry to `REVISION_LOG.md` (compact Markdown table) without loading historical logs.
 
 ---
 
-### Workflow 2: Emergency Rollback (Fixing AI Hallucinations)
+### Workflow 2: Multi-File Batch Edits (Zero-Collision Directory Tree)
 
-If an agent hallucinates, deletes essential business logic, or introduces breaking bugs across prompt iterations:
+When using Cursor Composer, Windsurf Cascade, or Claude Code on multi-file prompts across different directories:
+> *"Implement the checkout flow: update `src/auth/service.py` for payment scopes and `src/billing/service.py` for Stripe webhooks."*
 
-**What You Ask Your Agent:**
-> *"The changes in `auth_service.py` broke our test suite. Please roll back `auth_service.py` to `v1.0.0`."*
+Notice both files share the identical name (`service.py`) in different directories. Agent-Checkpoint mirrors the relative path to eliminate any filename collisions:
+* `.snapshots/src/auth/service.py/v1.0.0.py`
+* `.snapshots/src/billing/service.py/v1.0.0.py`
 
-**What the Agent Does:**
-1. Looks up `v1.0.0` in `.snapshots/auth_service.py/manifest.json`.
-2. Restores `.snapshots/auth_service.py/v1.0.0.py` over `auth_service.py`.
-3. Appends the rollback event to `REVISION_LOG.md` (e.g., `PATCH | Rolled back auth_service.py from v1.1.0 to v1.0.0 due to test failure`).
-4. Your codebase is immediately returned to a clean, working state.
+Each file receives its own isolated directory bucket, bounded sliding-window retention ($K \le 5$), sharded `manifest.json`, and stream-appended entry in `REVISION_LOG.md`.
 
 ---
 
-### Workflow 3: Deep Trackback & Semantic Diff Inspection
+### Workflow 3: Selective Rollback with Two-Sided Verification (Why It Beats Git)
+
+Suppose an autonomous agent modifies both `src/auth/service.py` and `src/billing/service.py` in a single prompt. The Stripe webhook implementation in `billing` works perfectly and passes all tests. However, the auth refactor introduced a fatal syntax bug that breaks the login flow.
+
+**The Git Dilemma:**  
+A blunt `git reset --hard` or `git checkout .` wipes out your entire working directory, discarding the good, working code in `src/billing/service.py` alongside the broken auth code.
+
+**The Agent-Checkpoint Solution:**  
+Ask your AI agent for a granular, selective rollback:
+> *"The changes in `src/auth/service.py` broke the test suite. Please roll back `src/auth/service.py` to `v1.0.0`, but keep `src/billing/service.py` untouched."*
+
+**What the Agent Does:**
+1. Looks up `v1.0.0` in `.snapshots/src/auth/service.py/manifest.json`.
+2. Restores `.snapshots/src/auth/service.py/v1.0.0.py` over `src/auth/service.py`.
+3. Leaves `src/billing/service.py` completely undisturbed.
+4. Appends a rollback audit entry to `REVISION_LOG.md`.
+
+#### 🔬 Two-Sided Mathematical Verification:
+To ensure 100% data integrity, both sides of the selective rollback are verifiable:
+
+```python
+# Side A: Assert untouched file was NOT modified during rollback
+assert sha256("src/billing/service.py_before") == sha256("src/billing/service.py_after")
+
+# Side B: Assert restored file exactly matches the target checkpoint
+assert sha256("src/auth/service.py_after") == sha256(".snapshots/src/auth/service.py/v1.0.0.py")
+```
+
+| Verification Check | Target File | Verification Metric | Status |
+| :--- | :--- | :--- | :---: |
+| **Side A (Untouched Integrity)** | `src/billing/service.py` | Hash identical before & after rollback | **VERIFIED (Unchanged)** |
+| **Side B (Checkpoint Fidelity)** | `src/auth/service.py` | Hash matches snapshot `v1.0.0` | **VERIFIED (Restored)** |
+
+> 💡 **Try it yourself:** Run the automated mathematical proof directly via `python examples/verify_selective_rollback.py`.
+
+---
+
+### Workflow 4: Deep Trackback & Semantic Diff Inspection
 
 You return to your computer after an agent finished multiple autonomous edits:
 
@@ -185,20 +220,6 @@ You return to your computer after an agent finished multiple autonomous edits:
 1. Loads the historical snapshot `.snapshots/data_pipeline.py/v1.0.0.py` and active `data_pipeline.py`.
 2. Inspects `.snapshots/data_pipeline.py/manifest.json` and `REVISION_LOG.md` to retrieve context.
 3. Produces a concise, semantic Before vs After diff report highlighting modified functions and algorithmic complexity changes without manual git diffing.
-
----
-
-### Workflow 4: Multi-File Batch Workflows (Composer & Agents)
-
-When using Cursor Composer, Windsurf Cascade, or Claude Code on multi-file prompts:
-> *"Implement a new billing checkout flow: update `routes.ts`, `stripe_client.py`, and `database.sql`."*
-
-The protocol executes sequentially per target file:
-* `.snapshots/routes.ts/v1.0.0.ts`
-* `.snapshots/stripe_client.py/v1.0.0.py`
-* `.snapshots/database.sql/v1.0.0.sql`
-
-Each modified file receives its own hierarchical bucket, bounded sliding-window retention ($K \le 5$), sharded `manifest.json`, and stream-appended entry in `REVISION_LOG.md`.
 
 ---
 
@@ -234,16 +255,17 @@ Once active, your project maintains an exceptionally clean, self-contained hiera
 ```text
 my-project/
 ├── .snapshots/                          # Isolated historical buckets
-│   ├── auth_service.py/                 # Dedicated bucket per file
+│   ├── src/auth/service.py/             # Preserves full relative directory tree
 │   │   ├── manifest.json                # Sharded local registry (< 40 tokens read)
 │   │   ├── v1.0.0.py                    # Retained snapshot (K <= 5 max)
 │   │   └── v1.1.0.py
-│   └── src/routes/api.ts/               # Nested paths preserved cleanly
+│   └── src/billing/service.py/          # Same filename ('service.py'), zero collision
 │       ├── manifest.json
-│       └── v1.0.0.ts
+│       └── v1.0.0.py
 ├── REVISION_LOG.md                      # Append-only compact Markdown table
-├── auth_service.py                      # Active working file
-└── src/routes/api.ts
+└── src/
+    ├── auth/service.py                  # Active working files
+    └── billing/service.py
 ```
 
 ---

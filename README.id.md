@@ -139,42 +139,77 @@ Jalankan perintah ini di dalam root proyek Anda:
 
 ## 🎮 Panduan Penggunaan Lengkap & Skenario Nyata
 
-Setelah file adapter terpasang, **tidak ada perintah CLI atau sintaks khusus yang perlu Anda hafalkan**. Anda dapat berinteraksi dengan AI secara natural seperti biasa. Berikut adalah 4 alur kerja (*workflows*) standar yang paling sering digunakan:
+Setelah file adapter terpasang, **tidak ada perintah CLI atau sintaks khusus yang perlu Anda hafalkan**. Anda dapat berinteraksi dengan AI secara natural seperti biasa. Berikut adalah 4 alur kerja (*workflows*) inti yang mendemonstrasikan penggunaan sehari-hari, pencegahan bentrok nama file, dan pembuktian *selective rollback*:
 
 ---
 
 ### Alur Kerja 1: Penambahan Fitur & Refaktorisasi Sehari-hari
 
 **Perintah (Prompt) yang Anda Berikan ke AI:**
-> *"Tolong refactor fungsi autentikasi di `auth_service.py` agar mendukung JWT refresh token, tambahkan pembatasan frekuensi (rate limiting) dengan Redis, dan perbaiki penanganan error."*
+> *"Tolong refactor fungsi autentikasi di `src/auth/service.py` agar mendukung JWT refresh token, tambahkan rate limiting dengan Redis, dan perbaiki penanganan error."*
 
 **Yang Dilakukan AI Secara Otomatis di Balik Layar:**
-1. **Memeriksa Status Berkas:** Mendeteksi bahwa `auth_service.py` sudah ada pada versi `v1.0.0`.
-2. **Membuat Snapshot Pra-Edit:** Menyalin `auth_service.py` $\to$ `.snapshots/auth_service.py/v1.0.0.py`.
+1. **Memeriksa Status Berkas:** Mendeteksi bahwa `src/auth/service.py` sudah ada pada versi `v1.0.0`.
+2. **Membuat Snapshot Pra-Edit:** Menyalin `src/auth/service.py` $\to$ `.snapshots/src/auth/service.py/v1.0.0.py`.
 3. **Mengklasifikasikan Dampak SemVer:** Mengevaluasi perubahan. Karena menambahkan fitur baru tanpa merusak antarmuka lama, AI mengkategorikannya sebagai `MINOR` ($\to$ `v1.1.0`).
-4. **Menerapkan Modifikasi & Memangkas Retensi ($K \le 5$):** Menimpa `auth_service.py` dengan kode baru yang diminta, dan secara otomatis memangkas snapshot tertua jika folder `.snapshots/auth_service.py/` melebihi 5 versi.
+4. **Menerapkan Modifikasi & Memangkas Retensi ($K \le 5$):** Menimpa `src/auth/service.py` dengan kode baru yang diminta, dan secara otomatis memangkas snapshot tertua jika folder `.snapshots/src/auth/service.py/` melebihi 5 versi.
 5. **Menyelaraskan Buku Besar Ganda (*Dual-Ledger*):**
-   * Memperbarui indeks mesin lokal terfragmentasi `.snapshots/auth_service.py/manifest.json` (< 40 token).
+   * Memperbarui indeks mesin lokal terfragmentasi `.snapshots/src/auth/service.py/manifest.json` (< 40 token).
    * Menambahkan baris ringkas 1-baris ke tabel `REVISION_LOG.md` tanpa perlu membaca ulang riwayat masa lalu.
 
 ---
 
-### Alur Kerja 2: Pemulihan Darurat / Rollback (Menangani Halusinasi AI)
+### Alur Kerja 2: Perubahan Multi-File Sekaligus (Struktur Folder Bebas Bentrok)
 
-Jika AI berhalusinasi, menghapus logika bisnis yang penting, atau menimbulkan error yang merusak aplikasi:
+Saat menggunakan Cursor Composer, Windsurf Cascade, atau Claude Code untuk mengedit banyak file sekaligus di berbagai subfolder:
+> *"Buat alur checkout pembayaran: perbarui `src/auth/service.py` untuk permission scope dan `src/billing/service.py` untuk Stripe webhooks."*
 
-**Perintah (Prompt) yang Anda Berikan ke AI:**
-> *"Perubahan pada `auth_service.py` menyebabkan unit test gagal. Tolong batalkan perubahan dan kembalikan `auth_service.py` ke versi `v1.0.0`."*
+Perhatikan bahwa kedua file memiliki nama file yang sama persis (`service.py`) di folder berbeda. Agent-Checkpoint mempertahankan path relatifnya secara hierarkis sehingga tidak akan pernah bentrok:
+* `.snapshots/src/auth/service.py/v1.0.0.py`
+* `.snapshots/src/billing/service.py/v1.0.0.py`
 
-**Yang Dilakukan AI:**
-1. Mencari versi `v1.0.0` di dalam `.snapshots/auth_service.py/manifest.json`.
-2. Menyalin kembali `.snapshots/auth_service.py/v1.0.0.py` menimpa file aktif `auth_service.py`.
-3. Menambahkan catatan rollback di `REVISION_LOG.md` (misal: `PATCH | Rolled back auth_service.py dari v1.1.0 ke v1.0.0 karena kegagalan pengujian`).
-4. Kode Anda seketika kembali ke kondisi stabil tanpa Anda perlu panik mencari baris kode yang hilang.
+Masing-masing file mendapatkan folder bucket terisolasi, batas retensi sliding window ($K \le 5$), file `manifest.json` lokal terfragmentasi, dan pencatatan 1-baris pada `REVISION_LOG.md`.
 
 ---
 
-### Alur Kerja 3: Pelacakan Riwayat Mendalam (*Trackback*) & Analisis Diff
+### Alur Kerja 3: Rollback Selektif dengan Verifikasi Dua Sisi (Keunggulan Mutlak atas Git)
+
+Bayangkan AI mengubah `src/auth/service.py` dan `src/billing/service.py` sekaligus. Hasil implementasi Stripe di `billing` berjalan mulus dan lulus tes. Namun, perubahan pada `auth` rusak karena halusinasi sintaks yang menyebabkan login gagal.
+
+**Dilema Menggunakan Git:**  
+Perintah kasar seperti `git reset --hard` atau `git checkout .` akan menghapus seluruh isi direktori kerja Anda, sehingga kode `billing` yang sudah bagus dan capek-capek dibuat akan ikut lenyap bersama kode `auth` yang rusak.
+
+**Solusi Agent-Checkpoint:**  
+Cukup minta AI melakukan pembatalan (*rollback*) terarah secara selektif:
+> *"Perubahan pada `src/auth/service.py` merusak unit test. Tolong kembalikan `src/auth/service.py` ke `v1.0.0`, tapi biarkan `src/billing/service.py` tetap seperti sekarang tanpa diubah."*
+
+**Yang Dilakukan AI:**
+1. Mencari versi `v1.0.0` di dalam `.snapshots/src/auth/service.py/manifest.json`.
+2. Menyalin kembali `.snapshots/src/auth/service.py/v1.0.0.py` menimpa file aktif `src/auth/service.py`.
+3. Membiarkan file `src/billing/service.py` tetap utuh 100%.
+4. Mencatat event rollback 1-baris di `REVISION_LOG.md`.
+
+#### 🔬 Verifikasi Matematis Dua Sisi:
+Integritas data di kedua sisi dapat diverifikasi secara pasti:
+
+```python
+# Sisi A: Memastikan file yang tidak dipilih BENAR-BENAR TIDAK BERUBAH
+assert sha256("src/billing/service.py_sebelum") == sha256("src/billing/service.py_sesudah")
+
+# Sisi B: Memastikan file yang di-restore COCOK 100% dengan file checkpoint
+assert sha256("src/auth/service.py_sesudah") == sha256(".snapshots/src/auth/service.py/v1.0.0.py")
+```
+
+| Pengujian Verifikasi | Berkas Target | Metrik Verifikasi | Status |
+| :--- | :--- | :--- | :---: |
+| **Sisi A (Integritas File Utuh)** | `src/billing/service.py` | Hash identik sebelum & sesudah rollback | **TERVERIFIKASI (Tak Berubah)** |
+| **Sisi B (Fidelitas Checkpoint)** | `src/auth/service.py` | Hash identik dengan snapshot `v1.0.0` | **TERVERIFIKASI (Pulih Sempurna)** |
+
+> 💡 **Coba Sendiri:** Jalankan pembuktian matematis otomatis ini secara langsung melalui: `python examples/verify_selective_rollback.py`.
+
+---
+
+### Alur Kerja 4: Pelacakan Riwayat Mendalam (*Trackback*) & Analisis Diff
 
 Ketika Anda kembali ke komputer setelah AI selesai melakukan banyak revisi berturut-turut:
 
@@ -185,20 +220,6 @@ Ketika Anda kembali ke komputer setelah AI selesai melakukan banyak revisi bertu
 1. Membaca snapshot lama `.snapshots/data_pipeline.py/v1.0.0.py` dan file aktif `data_pipeline.py`.
 2. Memeriksa `.snapshots/data_pipeline.py/manifest.json` dan `REVISION_LOG.md` untuk memahami konteks perubahan.
 3. Menyajikan laporan komparasi *Before vs After* yang jelas, menyoroti fungsi yang berubah tanpa Anda harus menjalankan perintah `git diff` yang rumit.
-
----
-
-### Alur Kerja 4: Perubahan Multi-File Sekaligus (Cursor Composer & Agent Mode)
-
-Saat menggunakan fitur Cursor Composer atau Claude Code untuk proyek multi-file:
-> *"Buat alur checkout pembayaran baru: perbarui `routes.ts`, `stripe_client.py`, dan `database.sql`."*
-
-Protokol ini berjalan secara berurutan dan terisolasi untuk setiap target file:
-* `.snapshots/routes.ts/v1.0.0.ts`
-* `.snapshots/stripe_client.py/v1.0.0.py`
-* `.snapshots/database.sql/v1.0.0.sql`
-
-Masing-masing file mendapatkan folder bucket terpisah, batas retensi sliding window ($K \le 5$), file `manifest.json` lokal terfragmentasi, dan pencatatan 1-baris pada `REVISION_LOG.md`.
 
 ---
 
@@ -234,16 +255,17 @@ Setelah aktif, proyek Anda mempertahankan hierarki arsip yang sangat rapi dan te
 ```text
 my-project/
 ├── .snapshots/                          # Folder snapshot terisolasi per berkas
-│   ├── auth_service.py/                 # Folder arsip khusus auth_service
+│   ├── src/auth/service.py/             # Struktur path folder asli tetap terjaga
 │   │   ├── manifest.json                # Indeks versi lokal (< 40 token baca)
 │   │   ├── v1.0.0.py                    # Cadangan versi (K <= 5 versi maksimal)
 │   │   └── v1.1.0.py
-│   └── src/routes/api.ts/               # Struktur path folder tetap terjaga
+│   └── src/billing/service.py/          # Nama file sama ('service.py'), bebas tabrakan
 │       ├── manifest.json
-│       └── v1.0.0.ts
+│       └── v1.0.0.py
 ├── REVISION_LOG.md                      # Tabel Markdown ringkas (Append-only)
-├── auth_service.py                      # File kerja aktif
-└── src/routes/api.ts
+└── src/
+    ├── auth/service.py                  # File kerja aktif
+    └── billing/service.py
 ```
 
 ---
