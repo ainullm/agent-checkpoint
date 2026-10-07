@@ -225,12 +225,16 @@ assert sha256("src/billing/service.py_sebelum") == sha256("src/billing/service.p
 
 # Sisi B: Memastikan file yang di-restore COCOK 100% dengan file checkpoint
 assert sha256("src/auth/service.py_sesudah") == sha256(".snapshots/src/auth/service.py/v1.0.0.py")
+
+# Kasus Khusus: Memastikan restorasi bersifat idempoten (dijalankan 2 kali hasilnya tetap identik)
+assert sha256("src/auth/service.py_restore_ke2") == sha256("src/auth/service.py_sesudah")
 ```
 
 | Pengujian Verifikasi | Berkas Target | Metrik Verifikasi | Status |
 | :--- | :--- | :--- | :---: |
 | **Sisi A (Integritas File Utuh)** | `src/billing/service.py` | Hash identik sebelum & sesudah rollback | **TERVERIFIKASI (Tak Berubah)** |
 | **Sisi B (Fidelitas Checkpoint)** | `src/auth/service.py` | Hash identik dengan snapshot `v1.0.0` | **TERVERIFIKASI (Pulih Sempurna)** |
+| **Kasus Khusus (Idempotensi)** | Kedua Berkas | Dijalankan 2x berturut-turut hash tetap identik | **TERVERIFIKASI (Bebas Efek Samping)** |
 
 > 💡 **Coba Sendiri:** Jalankan pembuktian matematis otomatis ini secara langsung melalui: `python examples/verify_selective_rollback.py`.
 

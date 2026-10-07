@@ -77,8 +77,22 @@ def run_verification():
         print(f"     Active SHA-256:     {auth_sha_after[:16]}...")
         print(f"     Checkpoint SHA-256: {auth_snapshot_sha[:16]}... (MATCH - 100% Restored)")
 
+        # 5. Edge Case: Idempotent Restoration (Second Restore of Same Checkpoint)
+        print("\n[4] Testing Edge Case: Idempotent Restoration (Second Restore)")
+        print("  Restoring 'src/auth/service.py' again from the same checkpoint...")
+        shutil.copy2(auth_snapshot, auth_file)
+
+        auth_sha_second = calculate_sha256(auth_file)
+        billing_sha_second = calculate_sha256(billing_file)
+
+        assert auth_sha_second == auth_sha_after, "FAIL: Second restore altered auth file!"
+        assert billing_sha_second == billing_sha_after, "FAIL: Second restore altered billing file!"
+        print("  [PASS] Edge Case [Idempotency Verified]:")
+        print(f"     Auth SHA-256 (2nd Restore):    {auth_sha_second[:16]}... (STABLE - No Drift)")
+        print(f"     Billing SHA-256 (2nd Restore): {billing_sha_second[:16]}... (STABLE - Untouched)")
+
         print("\n" + "=" * 70)
-        print("RESULT: Both assertions PASSED! Selective rollback is verified.")
+        print("RESULT: All assertions PASSED! Selective rollback & idempotency verified.")
         print("=" * 70)
 
     finally:

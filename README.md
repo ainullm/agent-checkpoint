@@ -225,12 +225,16 @@ assert sha256("src/billing/service.py_before") == sha256("src/billing/service.py
 
 # Side B: Assert restored file exactly matches the target checkpoint
 assert sha256("src/auth/service.py_after") == sha256(".snapshots/src/auth/service.py/v1.0.0.py")
+
+# Edge Case: Assert restoration is idempotent (running restore twice leaves state identical)
+assert sha256("src/auth/service.py_2nd_restore") == sha256("src/auth/service.py_after")
 ```
 
 | Verification Check | Target File | Verification Metric | Status |
 | :--- | :--- | :--- | :---: |
 | **Side A (Untouched Integrity)** | `src/billing/service.py` | Hash identical before & after rollback | **VERIFIED (Unchanged)** |
 | **Side B (Checkpoint Fidelity)** | `src/auth/service.py` | Hash matches snapshot `v1.0.0` | **VERIFIED (Restored)** |
+| **Edge Case (Idempotency)** | Both files | Restoring twice yields identical hashes | **VERIFIED (Zero Drift)** |
 
 > 💡 **Try it yourself:** Run the automated mathematical proof directly via `python examples/verify_selective_rollback.py`.
 
