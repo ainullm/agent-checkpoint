@@ -223,31 +223,6 @@ You return to your computer after an agent finished multiple autonomous edits:
 
 ---
 
-## 🤝 Git Integration Strategies: How to Handle `.snapshots/`
-
-Agent-Checkpoint is designed to complement Git, not replace it. You can choose between two popular collaboration strategies:
-
-```mermaid
-flowchart LR
-    subgraph StrategyA ["Strategy A: Team Audit Trail (Recommended for Open Source & Compliance)"]
-        A1[Commit Active Code] --> A2[Commit REVISION_LOG.md]
-        A2 --> A3[Commit .snapshots/ to Git]
-    end
-
-    subgraph StrategyB ["Strategy B: Local Micro-Safety (Recommended for Lean Repos)"]
-        B1[Commit Active Code] --> B2[Commit REVISION_LOG.md]
-        B2 --> B3[Add .snapshots/ to .gitignore]
-    end
-
-    style StrategyA fill:#132a13,color:#fff,stroke:#fff
-    style StrategyB fill:#1f2421,color:#fff,stroke:#fff
-```
-
-* **Strategy A (Full Team Provenance):** Check `.snapshots/` into Git. Teammates pulling the repo can inspect what AI generated, run trackbacks on previous prompts, and review audit trails directly in pull requests.
-* **Strategy B (Local Scratchpad):** Add `.snapshots/` to `.gitignore`, but keep `REVISION_LOG.md` committed. You retain 100% rollback protection on your local machine, while keeping remote Git repository size completely lean.
-
----
-
 ## 📂 Resulting Directory Layout (v2.0 Bucketed)
 
 Once active, your project maintains an exceptionally clean, self-contained hierarchy:
@@ -267,6 +242,57 @@ my-project/
     ├── auth/service.py                  # Active working files
     └── billing/service.py
 ```
+
+---
+
+## ⚖️ Agent-Checkpoint vs Git: Micro vs Macro Safety
+
+A common question is: *"Why not just rely on Git commits?"* 
+
+Git is built for **macro-safety** across milestones, while Agent-Checkpoint provides **micro-safety** between individual AI prompts before you are ready to commit:
+
+| Feature & Scenario | Standard Git Workflow | Agent-Checkpoint v2.0 Turbo |
+| :--- | :--- | :--- |
+| **Safety Horizon** | **Macro:** Protects committed milestones between days or PRs. | **Micro:** Protects uncommitted working files between prompts. |
+| **Trigger Mechanism** | Manual human execution (`git add` & `git commit`). | Automatic pre-edit snapshot triggered by the AI agent. |
+| **Multi-File Rollback** | `git checkout .` discards **all** uncommitted changes in the repo. | Selectively restores **only the broken file**, preserving good edits. |
+| **Context for Future Prompts** | Raw git diffs requiring token-heavy shell commands. | Compact `REVISION_LOG.md` table giving the AI instant architectural context. |
+| **Tooling & Setup** | Requires local Git CLI setup and clean tree discipline. | Zero install: drop a single rules file into your project root. |
+
+> 💡 **Key Takeaway:** Git protects your project from human mistakes across commits. Agent-Checkpoint protects your working tree from AI hallucinations between prompts.
+
+---
+
+## 🎯 Who Is This For?
+
+* **⚡ Heavy AI Pair Programmers (Cursor Composer, Windsurf, Claude Code):** Developers running multi-file autonomous edits who need granular rollbacks without losing working features.
+* **🔬 Researchers & Machine Learning Engineers:** Fast-iterating experimentalists who need an automated SemVer audit trail of hyperparameter and architecture changes without polluting Git history with dozens of WIP commits.
+* **🚀 Solo Developers & Indie Hackers:** Solo builders who lack dedicated code review partners and want an automated changelog of AI modifications before pushing to production.
+
+---
+
+## 🤝 Git Integration Strategies: How to Handle `.snapshots/`
+
+Agent-Checkpoint is designed to complement Git, not replace it. Choose between two simple workflows:
+
+```mermaid
+flowchart LR
+    subgraph StrategyA ["Strategy A: Team Audit Trail (Recommended for Open Source & Compliance)"]
+        A1[Commit Active Code] --> A2[Commit REVISION_LOG.md]
+        A2 --> A3[Commit .snapshots/ to Git]
+    end
+
+    subgraph StrategyB ["Strategy B: Local Micro-Safety (Recommended for Lean Repos)"]
+        B1[Commit Active Code] --> B2[Commit REVISION_LOG.md]
+        B2 --> B3[Add .snapshots/ to .gitignore]
+    end
+
+    style StrategyA fill:#132a13,color:#fff,stroke:#fff
+    style StrategyB fill:#1f2421,color:#fff,stroke:#fff
+```
+
+* **Strategy A (Full Team Provenance):** Check `.snapshots/` into Git. Teammates pulling the repo can inspect what AI generated, run trackbacks on previous prompts, and review audit trails directly in pull requests.
+* **Strategy B (Local Scratchpad):** Add `.snapshots/` to `.gitignore`, but keep `REVISION_LOG.md` committed. You retain 100% rollback protection on your local machine, while keeping remote Git repository size completely lean.
 
 ---
 
@@ -324,15 +350,7 @@ Because `.snapshots/` contains historical backups rather than runtime code, **pr
   find .snapshots/ -type f ! -name "manifest.json" -mtime +30 -delete
   ```
 
-#### 2. Manual Retention Sweep (Optional)
-*With v2.0 Turbo, retention is already automated ($K \le 5$ per bucket). To run an extra manual purge:*
-* **Bash / Zsh:**
-  ```bash
-  # Prunes snapshot files exceeding 5 latest per directory bucket
-  find .snapshots/ -mindepth 1 -maxdepth 1 -type d -exec bash -c 'ls -t "$0"/v* 2>/dev/null | tail -n +6 | xargs -r rm --' {} \;
-  ```
-
-#### 3. Complete Reset (Clean Slate)
+#### 2. Complete Reset (Clean Slate)
 If a project is finalized and you want to reclaim 100% of snapshot space:
 ```bash
 # Deletes all snapshots
@@ -341,18 +359,9 @@ rm -rf .snapshots
 
 ---
 
-## 🌐 Universal File Support (100+ Formats Supported)
+## 🌐 Universal File Support
 
-Agent-Checkpoint is completely language-agnostic and filetype-agnostic:
-
-* **Programming & Systems:** Python (`.py`), TypeScript (`.ts`, `.tsx`), JavaScript (`.js`, `.jsx`), Go (`.go`), Rust (`.rs`), C/C++ (`.c`, `.cpp`, `.h`, `.hpp`), C# (`.cs`), Java (`.java`), PHP (`.php`), Ruby (`.rb`), Swift (`.swift`), Kotlin (`.kt`), Dart (`.dart`), Scala (`.scala`), Shell (`.sh`, `.bash`, `.zsh`), PowerShell (`.ps1`, `.bat`), Lua (`.lua`), R (`.r`), Julia (`.jl`).
-* **Web & Modern Frontend:** HTML (`.html`), CSS (`.css`), SCSS/SASS (`.scss`), Vue (`.vue`), Svelte (`.svelte`), XML (`.xml`), SVG (`.svg`).
-* **Data Science & Research:** Jupyter Notebooks (`.ipynb`), Typst (`.typ`), LaTeX (`.tex`, `.bib`, `.sty`), Markdown (`.md`, `.mdx`), RestructuredText (`.rst`), AsciiDoc (`.adoc`), Plain text (`.txt`).
-* **Diagrams & Visuals as Code:** Mermaid (`.mmd`, `.mermaid`), PlantUML (`.puml`), Graphviz (`.dot`), Draw.io XML (`.drawio`), Excalidraw JSON (`.excalidraw`).
-* **API Schemas & Contracts:** Protobuf (`.proto`), GraphQL (`.graphql`, `.gql`), Prisma (`.prisma`), OpenAPI / Swagger (`.yaml`, `.json`), Apache Thrift (`.thrift`), FlatBuffers (`.fbs`).
-* **Game Development & Shaders:** GLSL (`.glsl`, `.frag`, `.vert`), HLSL (`.hlsl`), WGSL (`.wgsl`), Godot GDScript (`.gd`, `.tscn`), Unreal Engine text configs (`.ini`).
-* **Hardware & Embedded:** Verilog (`.v`, `.vh`), SystemVerilog (`.sv`), VHDL (`.vhd`), Assembly (`.asm`, `.s`), Arduino (`.ino`), CMake (`CMakeLists.txt`, `.cmake`).
-* **DevOps, IaC & Policies:** Open Policy Agent Rego (`.rego`), CUE (`.cue`), Terraform (`.tf`), Kubernetes manifests, Dockerfile, Makefile, JSON, YAML, TOML, SQL (`.sql`).
+Agent-Checkpoint is completely language- and runtime-agnostic. It works out-of-the-box with any plain-text source code (Python, TypeScript, JavaScript, Go, Rust, C/C++, Java, PHP, Ruby, Swift, Kotlin), markup (HTML, CSS, Markdown, LaTeX), API schemas (Protobuf, GraphQL, OpenAPI), and infrastructure configs (Terraform, Dockerfile, YAML, SQL).
 
 ---
 

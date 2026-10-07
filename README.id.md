@@ -223,6 +223,54 @@ Ketika Anda kembali ke komputer setelah AI selesai melakukan banyak revisi bertu
 
 ---
 
+## 📂 Struktur Folder Proyek (v2.0 Bucketed)
+
+Setelah aktif, proyek Anda mempertahankan hierarki arsip yang sangat rapi dan terisolasi:
+
+```text
+my-project/
+├── .snapshots/                          # Folder snapshot terisolasi per berkas
+│   ├── src/auth/service.py/             # Struktur path folder asli tetap terjaga
+│   │   ├── manifest.json                # Indeks versi lokal (< 40 token baca)
+│   │   ├── v1.0.0.py                    # Cadangan versi (K <= 5 versi maksimal)
+│   │   └── v1.1.0.py
+│   └── src/billing/service.py/          # Nama file sama ('service.py'), bebas tabrakan
+│       ├── manifest.json
+│       └── v1.0.0.py
+├── REVISION_LOG.md                      # Tabel Markdown ringkas (Append-only)
+└── src/
+    ├── auth/service.py                  # File kerja aktif
+    └── billing/service.py
+```
+
+---
+
+## ⚖️ Agent-Checkpoint vs Git: Perlindungan Mikro vs Makro
+
+Pertanyaan yang sering muncul adalah: *"Mengapa tidak mengandalkan commit Git saja?"*
+
+Git dirancang untuk **keamanan makro** antar-fitur atau antar-hari, sedangkan Agent-Checkpoint menyediakan **keamanan mikro** di antara jeda prompt AI sebelum Anda siap melakukan *commit*:
+
+| Fitur & Skenario | Alur Kerja Standar Git | Agent-Checkpoint v2.0 Turbo |
+| :--- | :--- | :--- |
+| **Cakupan Perlindungan** | **Makro:** Melindungi milestone yang sudah di-*commit* (antar-hari / PR). | **Mikro:** Melindungi file kerja yang belum di-*commit* di antara prompt AI. |
+| **Mekanisme Pemicu** | Manual oleh manusia (`git add` & `git commit`). | Otomatis dibuat oleh AI sesaat sebelum mengeksekusi edit. |
+| **Rollback Multi-File** | `git checkout .` membuang **seluruh** perubahan yang belum di-commit. | Me-rollback **hanya file yang rusak**, mempertahankan edit bagus lainnya. |
+| **Konteks untuk Prompt Berikutnya** | Diff mentah Git yang memakan banyak token terminal. | Tabel ringkas `REVISION_LOG.md` memberi AI konteks arsitektural instan. |
+| **Instalasi & Konfigurasi** | Memerlukan CLI Git lokal dan kedisiplinan branch. | Zero install: cukup taruh 1 file aturan di folder proyek. |
+
+> 💡 **Kesimpulan Utama:** Git melindungi proyek Anda dari kesalahan manusia antar-commit. Agent-Checkpoint melindungi direktori kerja Anda dari halusinasi AI antar-prompt.
+
+---
+
+## 🎯 Untuk Siapa Tool Ini Dibuat?
+
+* **⚡ Pengguna Berat AI Pair Programming (Cursor Composer, Windsurf, Claude Code):** Developer yang menjalankan pengeditan multi-file otonom dan membutuhkan rollback selektif tanpa kehilangan fitur yang sudah jalan.
+* **🔬 Mahasiswa, Peneliti & Praktisi Machine Learning:** Peneliti yang melakukan eksperimen cepat dan butuh catatan audit SemVer otomatis untuk melacak perubahan arsitektur tanpa mengotori riwayat Git dengan puluhan commit coba-coba.
+* **🚀 Solo Developer & Indie Hacker:** Pengembang mandiri tanpa rekan *code review* yang membutuhkan ringkasan perubahan jelas sebelum memutuskan untuk mendorong kode ke repositori utama.
+
+---
+
 ## 🤝 Strategi Integrasi dengan Git: Cara Mengelola Folder `.snapshots/`
 
 Agent-Checkpoint dirancang untuk melengkapi Git, bukan menggantikannya. Anda dapat memilih salah satu dari dua strategi berikut sesuai kebutuhan tim:
@@ -245,28 +293,6 @@ flowchart LR
 
 * **Strategi A (Audit Trail Lengkap Tim):** Masukkan `.snapshots/` ke dalam commit Git. Rekan kerja yang melakukan *pull* dapat melihat kode lama yang diubah AI dan meninjau log revisi langsung saat proses *Code Review / Pull Request*.
 * **Strategi B (Pengaman Lokal Mandiri):** Tambahkan `.snapshots/` ke dalam file `.gitignore`, namun tetap sertakan `REVISION_LOG.md` di Git. Anda tetap mendapatkan proteksi rollback 100% di komputer lokal, sementara ukuran repositori Git di cloud tetap sangat ramping.
-
----
-
-## 📂 Struktur Folder Proyek (v2.0 Bucketed)
-
-Setelah aktif, proyek Anda mempertahankan hierarki arsip yang sangat rapi dan terisolasi:
-
-```text
-my-project/
-├── .snapshots/                          # Folder snapshot terisolasi per berkas
-│   ├── src/auth/service.py/             # Struktur path folder asli tetap terjaga
-│   │   ├── manifest.json                # Indeks versi lokal (< 40 token baca)
-│   │   ├── v1.0.0.py                    # Cadangan versi (K <= 5 versi maksimal)
-│   │   └── v1.1.0.py
-│   └── src/billing/service.py/          # Nama file sama ('service.py'), bebas tabrakan
-│       ├── manifest.json
-│       └── v1.0.0.py
-├── REVISION_LOG.md                      # Tabel Markdown ringkas (Append-only)
-└── src/
-    ├── auth/service.py                  # File kerja aktif
-    └── billing/service.py
-```
 
 ---
 
@@ -324,15 +350,7 @@ Karena folder `.snapshots/` hanya berisi arsip riwayat dan bukan kode yang sedan
   find .snapshots/ -type f ! -name "manifest.json" -mtime +30 -delete
   ```
 
-#### 2. Pembersihan Retensi Manual (Opsional)
-*Pada v2.0 Turbo, retensi sudah otomatis berjalan ($K \le 5$ per bucket). Untuk pembersihan manual tambahan:*
-* **Bash / Zsh:**
-  ```bash
-  # Menghapus file snapshot yang melebihi 5 versi terbaru per folder bucket
-  find .snapshots/ -mindepth 1 -maxdepth 1 -type d -exec bash -c 'ls -t "$0"/v* 2>/dev/null | tail -n +6 | xargs -r rm --' {} \;
-  ```
-
-#### 3. Reset Total (Membersihkan Bersih)
+#### 2. Reset Total (Membersihkan Bersih)
 Jika sebuah proyek sudah selesai dan Anda ingin mengosongkan folder snapshot:
 ```bash
 # Menghapus seluruh snapshot
@@ -341,18 +359,9 @@ rm -rf .snapshots
 
 ---
 
-## 🌐 Dukungan Berkas Universal (Mendukung 100+ Format)
+## 🌐 Dukungan Berkas Universal
 
-Agent-Checkpoint sepenuhnya independen terhadap bahasa dan format berkas:
-
-* **Bahasa Pemrograman & Sistem:** Python (`.py`), TypeScript (`.ts`, `.tsx`), JavaScript (`.js`, `.jsx`), Go (`.go`), Rust (`.rs`), C/C++ (`.c`, `.cpp`, `.h`, `.hpp`), C# (`.cs`), Java (`.java`), PHP (`.php`), Ruby (`.rb`), Swift (`.swift`), Kotlin (`.kt`), Dart (`.dart`), Scala (`.scala`), Shell (`.sh`, `.bash`, `.zsh`), PowerShell (`.ps1`, `.bat`), Lua (`.lua`), R (`.r`), Julia (`.jl`).
-* **Web & Antarmuka Frontend:** HTML (`.html`), CSS (`.css`), SCSS/SASS (`.scss`), Vue (`.vue`), Svelte (`.svelte`), XML (`.xml`), SVG (`.svg`).
-* **Data Science & Riset Modern:** Jupyter Notebooks (`.ipynb`), Typst (`.typ`), LaTeX (`.tex`, `.bib`, `.sty`), Markdown (`.md`, `.mdx`), RestructuredText (`.rst`), AsciiDoc (`.adoc`), Plain text (`.txt`).
-* **Diagrams & Visual Berbasis Kode:** Mermaid (`.mmd`, `.mermaid`), PlantUML (`.puml`), Graphviz (`.dot`), Draw.io XML (`.drawio`), Excalidraw JSON (`.excalidraw`).
-* **Skema API, Kontrak & Protokol:** Protobuf (`.proto`), GraphQL (`.graphql`, `.gql`), Prisma (`.prisma`), OpenAPI / Swagger (`.yaml`, `.json`), Apache Thrift (`.thrift`), FlatBuffers (`.fbs`).
-* **Game Development & Shaders:** GLSL (`.glsl`, `.frag`, `.vert`), HLSL (`.hlsl`), WGSL (`.wgsl`), Godot GDScript (`.gd`, `.tscn`), Unreal Engine text configs (`.ini`).
-* **Hardware & Sistem Tertanam (Embedded):** Verilog (`.v`, `.vh`), SystemVerilog (`.sv`), VHDL (`.vhd`), Assembly (`.asm`, `.s`), Arduino (`.ino`), CMake (`CMakeLists.txt`, `.cmake`).
-* **DevOps, IaC & Kebijakan Keamanan:** Open Policy Agent Rego (`.rego`), CUE (`.cue`), Terraform (`.tf`), Kubernetes manifests, Dockerfile, Makefile, JSON, YAML, TOML, SQL (`.sql`).
+Agent-Checkpoint sepenuhnya independen terhadap bahasa dan sistem *runtime*. Protokol ini langsung bekerja untuk seluruh berkas teks sumber (Python, TypeScript, JavaScript, Go, Rust, C/C++, Java, PHP, Ruby, Swift, Kotlin), markup (HTML, CSS, Markdown, LaTeX), skema API (Protobuf, GraphQL, OpenAPI), serta konfigurasi infrastruktur (Terraform, Dockerfile, YAML, SQL).
 
 ---
 
