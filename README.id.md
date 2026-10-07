@@ -100,6 +100,8 @@ Pemasangan tidak memerlukan konfigurasi rumit maupun perintah terminal. Cukup gu
    * **Windsurf (Cascade):** Salin file [`.windsurfrules`](./adapters/.windsurfrules)
    * **GitHub Copilot:** Salin file [`copilot-instructions.md`](./adapters/copilot-instructions.md) ke folder `.github/`
 3. Tempel (*paste*) file tersebut ke folder root proyek Anda.
+   > [!NOTE]
+   > Jika Anda sudah memiliki file aturan sebelumnya (seperti `AGENTS.md` atau `CLAUDE.md`), jangan replace file tersebut. Cukup buka kedua file dan salin isi aturan Agent-Checkpoint ke baris paling bawah.
 4. **Selesai!** AI di aplikasi Anda sudah otomatis terlindungi.
 
 ---
@@ -107,24 +109,40 @@ Pemasangan tidak memerlukan konfigurasi rumit maupun perintah terminal. Cukup gu
 ### Cara 2: Menggunakan Terminal (Perintah 1-Baris)
 Jalankan perintah ini di dalam root proyek Anda:
 
+> [!TIP]
+> **Sudah punya file aturan sebelumnya?** Gunakan perintah **Append (`>>` / `Add-Content`)** di bawah agar instruksi lama Anda tetap utuh! Jika proyek baru kosong, gunakan perintah **Fresh Install (`-o`)**.
+
 * **Cursor IDE:**
   ```bash
-  # Mode Classic .cursorrules:
-  curl -o .cursorrules https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.cursorrules
-
-  # Mode Modern Cursor Rules (.cursor/rules/*.mdc):
+  # Rekomendasi: Modern Isolated Rule (.cursor/rules/*.mdc) - Tidak pernah menimpa aturan lama:
   mkdir -p .cursor/rules && curl -o .cursor/rules/agent-checkpoint.mdc https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/agent-checkpoint.mdc
+
+  # Mode Classic .cursorrules (Append / Gabungkan ke file lama):
+  curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.cursorrules >> .cursorrules
+
+  # Mode Classic .cursorrules (Proyek baru kosong):
+  curl -o .cursorrules https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.cursorrules
   ```
 * **Claude Code:**
   ```bash
+  # Proyek lama (Append tanpa menimpa isi lama):
+  curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/CLAUDE.md >> CLAUDE.md
+
+  # Proyek baru (Buat baru):
   curl -o CLAUDE.md https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/CLAUDE.md
   ```
 * **Google Antigravity / Gemini CLI:**
   ```bash
-  # Khusus proyek aktif:
+  # Khusus proyek aktif (Append ke AGENTS.md yang sudah ada - Direkomendasikan):
+  # Linux/macOS:
+  curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md >> AGENTS.md
+  # Windows PowerShell:
+  Add-Content -Path "AGENTS.md" -Value (Invoke-RestMethod "https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md")
+
+  # Khusus proyek aktif (Proyek baru tanpa AGENTS.md sebelumnya):
   curl -o AGENTS.md https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md
 
-  # Atau Global untuk seluruh proyek di komputer Anda:
+  # Global untuk seluruh proyek di komputer Anda (Append):
   # Linux/macOS:
   curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md >> ~/.gemini/AGENTS.md
   # Windows PowerShell:
@@ -132,6 +150,10 @@ Jalankan perintah ini di dalam root proyek Anda:
   ```
 * **Windsurf:**
   ```bash
+  # Proyek lama (Append tanpa menimpa):
+  curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.windsurfrules >> .windsurfrules
+
+  # Proyek baru (Buat baru):
   curl -o .windsurfrules https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.windsurfrules
   ```
 

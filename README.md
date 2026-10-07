@@ -100,31 +100,49 @@ Installation requires **zero configuration and no command-line tools**. It follo
    * **Windsurf (Cascade):** Copy [`.windsurfrules`](./adapters/.windsurfrules)
    * **GitHub Copilot:** Copy [`copilot-instructions.md`](./adapters/copilot-instructions.md) into your `.github/` folder
 3. Paste the file into your project's root folder.
+   > [!NOTE]
+   > If you already have an existing rules file (such as `AGENTS.md` or `CLAUDE.md`), do **not** replace it. Open both files and paste the Agent-Checkpoint rules to the bottom of your existing file.
 4. **Done!** Your AI is now governed by the Agent-Checkpoint protocol.
 
 ---
 
-### Option 2: 1-Line Terminal Download (`curl`)
+### Option 2: 1-Line Terminal Download (`curl` / PowerShell)
 Run the command matching your editor inside your project root:
+
+> [!TIP]
+> **Already have custom rules?** Use the **Append (`>>`)** commands below so your existing instructions remain intact! If setting up a fresh project with no prior rules, use the **Fresh Install (`-o`)** commands.
 
 * **Cursor IDE:**
   ```bash
-  # Classic .cursorrules:
-  curl -o .cursorrules https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.cursorrules
-
-  # Or Modern Cursor Rules (.cursor/rules/*.mdc):
+  # Recommended: Modern Isolated Rule (.cursor/rules/*.mdc) - Never overwrites existing rules:
   mkdir -p .cursor/rules && curl -o .cursor/rules/agent-checkpoint.mdc https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/agent-checkpoint.mdc
+
+  # Classic .cursorrules (Append to existing):
+  curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.cursorrules >> .cursorrules
+
+  # Classic .cursorrules (Fresh project):
+  curl -o .cursorrules https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.cursorrules
   ```
 * **Claude Code:**
   ```bash
+  # Existing project (Append without overwriting):
+  curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/CLAUDE.md >> CLAUDE.md
+
+  # Fresh project (Create new):
   curl -o CLAUDE.md https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/CLAUDE.md
   ```
 * **Google Antigravity / Gemini CLI:**
   ```bash
-  # Project-specific:
+  # Project-specific (Append to existing AGENTS.md - Recommended):
+  # Linux/macOS:
+  curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md >> AGENTS.md
+  # Windows PowerShell:
+  Add-Content -Path "AGENTS.md" -Value (Invoke-RestMethod "https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md")
+
+  # Project-specific (Fresh project with no prior AGENTS.md):
   curl -o AGENTS.md https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md
 
-  # Or Global (protects all projects on your machine):
+  # Global Machine Scope (protects all projects on your machine):
   # Linux/macOS:
   curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md >> ~/.gemini/AGENTS.md
   # Windows PowerShell:
@@ -132,6 +150,10 @@ Run the command matching your editor inside your project root:
   ```
 * **Windsurf:**
   ```bash
+  # Existing project (Append without overwriting):
+  curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.windsurfrules >> .windsurfrules
+
+  # Fresh project (Create new):
   curl -o .windsurfrules https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.windsurfrules
   ```
 
