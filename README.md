@@ -5,15 +5,21 @@
 **Ultra-efficient, zero-data-loss file snapshotting, SemVer classification, and token-optimized dual-ledger audit trail for autonomous AI coding agents.**
 
 [![Version: 2.0](https://img.shields.io/badge/Version-2.0%20Turbo-brightgreen.svg)]()
+[![CI: Tests](https://github.com/ainullm/agent-checkpoint/actions/workflows/verify.yml/badge.svg)](https://github.com/ainullm/agent-checkpoint/actions/workflows/verify.yml)
 [![Token Overhead: -80%](https://img.shields.io/badge/Token%20Overhead--80%25-blueviolet.svg)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![Zero Dependency](https://img.shields.io/badge/Dependencies-Zero-brightgreen.svg)]()
-[![Cross Agent](https://img.shields.io/badge/Agents-Antigravity%20%7C%20Claude%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20Copilot-orange.svg)]()
+[![Cross Agent](https://img.shields.io/badge/Agents-Antigravity%20%7C%20Claude%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20Cline-orange.svg)]()
 
 ---
 
 **Languages:**  
 [English (Current)](./README.md) • [🇮🇩 Bahasa Indonesia](./README.id.md)
+
+---
+
+**Quick Navigation:**  
+[Quickstart](#-beginners-quickstart-30-second-setup) • [60s Sanity Check](#-60-second-sanity-check-verify-it-works) • [Prompt Cheat Sheet](#-prompt-cheat-sheet-for-daily-use) • [Workflows](#-comprehensive-usage-guide--real-world-workflows) • [Git Companion Matrix](#-git-vs-agent-checkpoint-the-companion-matrix) • [Economics](#-token-economics-80-overhead-reduction-v20)
 
 ---
 
@@ -86,6 +92,9 @@ flowchart TD
 
 ## 🔰 Beginner's Quickstart (30-Second Setup)
 
+> [!IMPORTANT]
+> **Git Best Practice:** Add `.snapshots/` to your `.gitignore` file (`echo ".snapshots/" >> .gitignore`). This ensures all local micro-snapshots stay on your machine without cluttering your team's Git commits or pull requests! `REVISION_LOG.md` can remain committed if you want a clean changelog visible to your team.
+
 Installation requires **zero configuration and no command-line tools**. It follows a simple drop-in pattern.
 
 ### Option 1: File Explorer / Drag-and-Drop (Easiest)
@@ -93,6 +102,7 @@ Installation requires **zero configuration and no command-line tools**. It follo
 2. Select the single file matching your AI tool:
    * **Cursor IDE:** Copy [`.cursorrules`](./adapters/.cursorrules) to project root, or copy [`agent-checkpoint.mdc`](./adapters/agent-checkpoint.mdc) into `.cursor/rules/` (Cursor 0.40+)
    * **Claude Code:** Copy [`CLAUDE.md`](./adapters/CLAUDE.md)
+   * **Cline / Roo Code:** Copy [`.clinerules`](./adapters/.clinerules)
    * **Google Antigravity / Gemini CLI:**
      - **Project Scope:** Copy [`adapters/AGENTS.md`](./adapters/AGENTS.md) into your project root.
      - **Global Machine Scope (Recommended):** Append [`adapters/AGENTS.md`](./adapters/AGENTS.md) to `~/.gemini/AGENTS.md` (protects all projects automatically!).
@@ -115,47 +125,88 @@ Run the command matching your editor inside your project root:
 * **Cursor IDE:**
   ```bash
   # Recommended: Modern Isolated Rule (.cursor/rules/*.mdc) - Never overwrites existing rules:
+  # Linux / macOS / Git Bash:
   mkdir -p .cursor/rules && curl -o .cursor/rules/agent-checkpoint.mdc https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/agent-checkpoint.mdc
+  # Windows PowerShell:
+  New-Item -ItemType Directory -Force -Path ".cursor/rules"; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/agent-checkpoint.mdc" -OutFile ".cursor/rules/agent-checkpoint.mdc"
 
   # Classic .cursorrules (Append to existing):
-  curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.cursorrules >> .cursorrules
-
-  # Classic .cursorrules (Fresh project):
-  curl -o .cursorrules https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.cursorrules
+  # Linux / macOS: curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.cursorrules >> .cursorrules
+  # Windows PowerShell: Add-Content -Path ".cursorrules" -Value (Invoke-RestMethod "https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.cursorrules")
   ```
 * **Claude Code:**
   ```bash
-  # Existing project (Append without overwriting):
+  # Append to existing (Linux / macOS):
   curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/CLAUDE.md >> CLAUDE.md
+  # Append to existing (Windows PowerShell):
+  Add-Content -Path "CLAUDE.md" -Value (Invoke-RestMethod "https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/CLAUDE.md")
 
   # Fresh project (Create new):
   curl -o CLAUDE.md https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/CLAUDE.md
   ```
+* **Cline / Roo Code:**
+  ```bash
+  # Append to existing (Linux / macOS):
+  curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.clinerules >> .clinerules
+  # Append to existing (Windows PowerShell):
+  Add-Content -Path ".clinerules" -Value (Invoke-RestMethod "https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.clinerules")
+
+  # Fresh project:
+  curl -o .clinerules https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.clinerules
+  ```
 * **Google Antigravity / Gemini CLI:**
   ```bash
   # Project-specific (Append to existing AGENTS.md - Recommended):
-  # Linux/macOS:
+  # Linux / macOS:
   curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md >> AGENTS.md
   # Windows PowerShell:
   Add-Content -Path "AGENTS.md" -Value (Invoke-RestMethod "https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md")
 
-  # Project-specific (Fresh project with no prior AGENTS.md):
-  curl -o AGENTS.md https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md
-
   # Global Machine Scope (protects all projects on your machine):
-  # Linux/macOS:
+  # Linux / macOS:
   curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md >> ~/.gemini/AGENTS.md
   # Windows PowerShell:
   Add-Content -Path "$HOME\.gemini\AGENTS.md" -Value (Invoke-RestMethod "https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md")
   ```
 * **Windsurf:**
   ```bash
-  # Existing project (Append without overwriting):
+  # Append to existing (Linux / macOS):
   curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.windsurfrules >> .windsurfrules
+  # Append to existing (Windows PowerShell):
+  Add-Content -Path ".windsurfrules" -Value (Invoke-RestMethod "https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.windsurfrules")
 
-  # Fresh project (Create new):
+  # Fresh project:
   curl -o .windsurfrules https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.windsurfrules
   ```
+
+---
+
+## 🧪 60-Second Sanity Check (Verify It Works)
+
+Once you install your adapter file, run this quick 2-step test in your AI chat to verify the protocol is active:
+
+1. **Step 1: Ask your agent to create a test file:**
+   > *"Create a file named `calc.py` with an `add(a, b)` function."*
+2. **Step 2: Ask your agent to edit it:**
+   > *"Add type hints and docstrings to `calc.py`."*
+3. **Check your project root:**
+   * Is `.snapshots/calc.py/v1.0.0.py` created? ✅
+   * Is `.snapshots/calc.py/manifest.json` updated? ✅
+   * Does `REVISION_LOG.md` contain an audit table entry? ✅
+
+If yes, congratulations! Your AI agent is now 100% self-governed and protected against destructive overwrites.
+
+---
+
+## 📋 Prompt Cheat Sheet for Daily Use
+
+Keep these 3 everyday prompts handy whenever you pair-program with your AI:
+
+| Purpose | What to Prompt Your AI Agent | What Happens Behind the Scenes |
+| :--- | :--- | :--- |
+| 🚀 **Safe Edit / Feature** | *"Refactor `[filepath]` to `[your task]`. Follow agent-checkpoint protocol."* | Auto-creates pre-edit snapshot $\to$ triages SemVer $\to$ applies changes $\to$ streams 1 line to `REVISION_LOG.md`. |
+| 🔄 **Selective Rollback** | *"The last change broke the build. Please roll back `[filepath]` to `v1.0.0` from `.snapshots/`."* | Restores target file from its pristine snapshot while leaving all other working files completely untouched. |
+| 📜 **Inspect Past History** | *"Show me the revision history of `[filepath]` from its local manifest."* | Agent reads sharded `manifest.json` (< 40 tokens) and presents a concise timeline without burning context tokens. |
 
 ---
 

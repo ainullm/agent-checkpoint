@@ -1,0 +1,22 @@
+# AGENT-CHECKPOINT PROTOCOL v2.0 (Cline / Roo Code)
+# Place this file as .clinerules at your workspace root.
+
+Follow the Agent-Checkpoint v2.0 protocol whenever modifying existing files:
+
+1. BUCKETED PRE-EDIT SNAPSHOT:
+   - Before modifying an existing file, copy its current state to:
+     `.snapshots/<filepath>/v<OLD_VERSION>.<ext>`
+   - Retention Limit: Keep at most 5 latest snapshot versions per file bucket. Automatically prune older snapshots.
+
+2. SEMVER IMPACT ASSESSMENT:
+   - MAJOR: Breaking architectural change or interface rewrite.
+   - MINOR: Additive features, new functions/endpoints.
+   - PATCH: Bug fix, parameter tuning, typo, cleanup.
+
+3. TOKEN-OPTIMIZED DUAL-LEDGER:
+   - Update sharded index at `.snapshots/<filepath>/manifest.json` (< 40 tokens).
+   - Append 1 line to `REVISION_LOG.md` table without reading old history:
+     | <YYYY-MM-DD HH:MM> | <Version> | <Impact> | <File> | <Snapshot> | <Short Rationale> |
+
+4. SAFETY EXCLUSIONS:
+   - Strictly exclude caches (node_modules, venv, __pycache__, .git) and heavy binaries/models (.pt, .onnx, datasets > 1 MB).

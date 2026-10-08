@@ -5,15 +5,21 @@
 **Pencadangan file pra-edit tanpa kehilangan data, isolasi folder berkas, pemangkasan retensi cerdas, dan efisiensi token hingga 80% untuk AI coding & riset otonom.**
 
 [![Version: 2.0](https://img.shields.io/badge/Versi-2.0%20Turbo-brightgreen.svg)]()
+[![CI: Pengujian](https://github.com/ainullm/agent-checkpoint/actions/workflows/verify.yml/badge.svg)](https://github.com/ainullm/agent-checkpoint/actions/workflows/verify.yml)
 [![Overhead Token: -80%](https://img.shields.io/badge/Hemat%20Token--80%25-blueviolet.svg)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![Zero Dependency](https://img.shields.io/badge/Dependencies-Zero-brightgreen.svg)]()
-[![Cross Agent](https://img.shields.io/badge/Agents-Antigravity%20%7C%20Claude%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20Copilot-orange.svg)]()
+[![Cross Agent](https://img.shields.io/badge/Agents-Antigravity%20%7C%20Claude%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20Cline-orange.svg)]()
 
 ---
 
 **Pilihan Bahasa:**  
 [🇬🇧 English](./README.md) • [🇮🇩 Bahasa Indonesia (Aktif)](./README.id.md)
+
+---
+
+**Navigasi Cepat:**  
+[Panduan Kilat](#-panduan-kilat-pemula-pemasangan-30-detik) • [Uji Coba 60 Detik](#-uji-coba-mandiri-60-detik-memastikan-protokol-aktif) • [Cheat Sheet Prompt](#-cheat-sheet-prompt-untuk-penggunaan-sehari-hari) • [Alur Kerja](#-panduan-penggunaan-lengkap--skenario-nyata) • [Matriks Git](#-git-vs-agent-checkpoint-tabel-perbandingan-simbiotik) • [Efisiensi Token](#-efisiensi-token-penghematan-biaya-hingga-80)
 
 ---
 
@@ -84,7 +90,10 @@ flowchart TD
 
 ---
 
-## 🔰 Panduan Pemula (Pemasangan 30 Detik)
+## 🔰 Panduan Kilat Pemula (Pemasangan 30 Detik)
+
+> [!IMPORTANT]
+> **Praktik Terbaik Git:** Tambahkan `.snapshots/` ke dalam file `.gitignore` Anda (`echo ".snapshots/" >> .gitignore`). Langkah ini memastikan semua snapshot mikro lokal tetap berada di laptop Anda tanpa mengotori commit Git maupun pull request tim! Sedangkan file `REVISION_LOG.md` tetap dapat di-commit jika Anda ingin riwayat perubahan dapat dibaca oleh rekan tim.
 
 Pemasangan tidak memerlukan konfigurasi rumit maupun perintah terminal. Cukup gunakan metode *drop-in file*.
 
@@ -93,6 +102,7 @@ Pemasangan tidak memerlukan konfigurasi rumit maupun perintah terminal. Cukup gu
 2. Pilih 1 file yang sesuai dengan aplikasi AI Anda:
    * **Cursor IDE:** Salin [`.cursorrules`](./adapters/.cursorrules) ke root proyek, atau salin [`agent-checkpoint.mdc`](./adapters/agent-checkpoint.mdc) ke dalam `.cursor/rules/` (Cursor 0.40+)
    * **Claude Code:** Salin file [`CLAUDE.md`](./adapters/CLAUDE.md)
+   * **Cline / Roo Code:** Salin file [`.clinerules`](./adapters/.clinerules)
    * **Google Antigravity / Gemini CLI:**
      - **Tingkat Proyek (Project Scope):** Salin [`adapters/AGENTS.md`](./adapters/AGENTS.md) ke root proyek Anda.
      - **Tingkat Global PC (Direkomendasikan):** Tambahkan isi [`adapters/AGENTS.md`](./adapters/AGENTS.md) ke `~/.gemini/AGENTS.md` (otomatis melindungi semua proyek di laptop Anda!).
@@ -115,47 +125,88 @@ Jalankan perintah ini di dalam root proyek Anda:
 * **Cursor IDE:**
   ```bash
   # Rekomendasi: Modern Isolated Rule (.cursor/rules/*.mdc) - Tidak pernah menimpa aturan lama:
+  # Linux / macOS / Git Bash:
   mkdir -p .cursor/rules && curl -o .cursor/rules/agent-checkpoint.mdc https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/agent-checkpoint.mdc
+  # Windows PowerShell:
+  New-Item -ItemType Directory -Force -Path ".cursor/rules"; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/agent-checkpoint.mdc" -OutFile ".cursor/rules/agent-checkpoint.mdc"
 
-  # Mode Classic .cursorrules (Append / Gabungkan ke file lama):
-  curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.cursorrules >> .cursorrules
-
-  # Mode Classic .cursorrules (Proyek baru kosong):
-  curl -o .cursorrules https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.cursorrules
+  # Mode Classic .cursorrules (Append ke file lama):
+  # Linux / macOS: curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.cursorrules >> .cursorrules
+  # Windows PowerShell: Add-Content -Path ".cursorrules" -Value (Invoke-RestMethod "https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.cursorrules")
   ```
 * **Claude Code:**
   ```bash
-  # Proyek lama (Append tanpa menimpa isi lama):
+  # Append ke file lama (Linux / macOS):
   curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/CLAUDE.md >> CLAUDE.md
+  # Append ke file lama (Windows PowerShell):
+  Add-Content -Path "CLAUDE.md" -Value (Invoke-RestMethod "https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/CLAUDE.md")
 
   # Proyek baru (Buat baru):
   curl -o CLAUDE.md https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/CLAUDE.md
   ```
+* **Cline / Roo Code:**
+  ```bash
+  # Append ke file lama (Linux / macOS):
+  curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.clinerules >> .clinerules
+  # Append ke file lama (Windows PowerShell):
+  Add-Content -Path ".clinerules" -Value (Invoke-RestMethod "https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.clinerules")
+
+  # Proyek baru (Buat baru):
+  curl -o .clinerules https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.clinerules
+  ```
 * **Google Antigravity / Gemini CLI:**
   ```bash
   # Khusus proyek aktif (Append ke AGENTS.md yang sudah ada - Direkomendasikan):
-  # Linux/macOS:
+  # Linux / macOS:
   curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md >> AGENTS.md
   # Windows PowerShell:
   Add-Content -Path "AGENTS.md" -Value (Invoke-RestMethod "https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md")
 
-  # Khusus proyek aktif (Proyek baru tanpa AGENTS.md sebelumnya):
-  curl -o AGENTS.md https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md
-
   # Global untuk seluruh proyek di komputer Anda (Append):
-  # Linux/macOS:
+  # Linux / macOS:
   curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md >> ~/.gemini/AGENTS.md
   # Windows PowerShell:
   Add-Content -Path "$HOME\.gemini\AGENTS.md" -Value (Invoke-RestMethod "https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/AGENTS.md")
   ```
 * **Windsurf:**
   ```bash
-  # Proyek lama (Append tanpa menimpa):
+  # Append ke file lama (Linux / macOS):
   curl -s https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.windsurfrules >> .windsurfrules
+  # Append ke file lama (Windows PowerShell):
+  Add-Content -Path ".windsurfrules" -Value (Invoke-RestMethod "https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.windsurfrules")
 
   # Proyek baru (Buat baru):
   curl -o .windsurfrules https://raw.githubusercontent.com/ainullm/agent-checkpoint/main/adapters/.windsurfrules
   ```
+
+---
+
+## 🧪 Uji Coba Mandiri 60 Detik (Memastikan Protokol Aktif)
+
+Setelah Anda memasang file adapter, jalankan uji coba 2 langkah sederhana ini di chat AI Anda untuk membuktikan bahwa perlindungan sudah aktif:
+
+1. **Langkah 1: Minta AI membuat file uji coba:**
+   > *"Buatkan file bernama `kalkulator.py` yang berisi fungsi `tambah(a, b)`."*
+2. **Langkah 2: Minta AI mengubah file tersebut:**
+   > *"Tambahkan type hint dan docstring penjelasan pada `kalkulator.py`."*
+3. **Periksa folder proyek Anda:**
+   * Apakah folder `.snapshots/kalkulator.py/v1.0.0.py` otomatis muncul? ✅
+   * Apakah `.snapshots/kalkulator.py/manifest.json` terisi? ✅
+   * Apakah `REVISION_LOG.md` bertambah 1 baris riwayat audit? ✅
+
+Jika ya, selamat! AI Anda sekarang 100% terlindungi dari bahaya penimpaan destruktif.
+
+---
+
+## 📋 Cheat Sheet Prompt untuk Penggunaan Sehari-hari
+
+Simpan 3 pola prompt sederhana ini untuk sesi koding sehari-hari dengan AI Anda:
+
+| Kebutuhan | Kalimat Prompt yang Diberikan ke AI | Apa yang Terjadi di Balik Layar |
+| :--- | :--- | :--- |
+| 🚀 **Edit / Tambah Fitur** | *"Refactor `[nama_file]` untuk `[kebutuhan Anda]`. Ikuti protokol agent-checkpoint."* | AI otomatis mencadangkan file lama ke `.snapshots/` $\to$ evaluasi SemVer $\to$ tulis kode baru $\to$ catat 1 baris ke `REVISION_LOG.md`. |
+| 🔄 **Rollback Selektif** | *"Perubahan terakhir merusak program. Tolong kembalikan `[nama_file]` ke `v1.0.0` dari `.snapshots/`."* | AI mengembalikan file target dari snapshot aslinya tanpa menyentuh file lain yang sudah berfungsi baik. |
+| 📜 **Cek Riwayat File** | *"Tampilkan riwayat revisi dari `[nama_file]` berdasarkan local manifest-nya."* | AI membaca `manifest.json` (< 40 token) dan menampilkan linimasa perubahan tanpa menghabiskan kuota token konteks. |
 
 ---
 
