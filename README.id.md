@@ -349,8 +349,9 @@ my-project/
 
 ---
 
-## ⚖️ Agent-Checkpoint vs Git: Perlindungan Mikro vs Makro
+## ⚖️ Agent-Checkpoint vs Git & Alternatif Lainnya
 
+### 1. Git vs Agent-Checkpoint: Perlindungan Mikro vs Makro
 Pertanyaan yang sering muncul adalah: *"Mengapa tidak mengandalkan commit Git saja?"*
 
 Git dirancang untuk **keamanan makro** antar-fitur atau antar-hari, sedangkan Agent-Checkpoint menyediakan **keamanan mikro** di antara jeda prompt AI sebelum Anda siap melakukan *commit*:
@@ -364,6 +365,18 @@ Git dirancang untuk **keamanan makro** antar-fitur atau antar-hari, sedangkan Ag
 | **Instalasi & Konfigurasi** | Memerlukan CLI Git lokal dan kedisiplinan branch. | Zero install: cukup taruh 1 file aturan di folder proyek. |
 
 > 💡 **Kesimpulan Utama:** Git melindungi proyek Anda dari kesalahan manusia antar-commit. Agent-Checkpoint melindungi direktori kerja Anda dari halusinasi AI antar-prompt.
+
+---
+
+### 2. Mengapa Bukan Alternatif Lain yang Sudah Ada?
+
+| Kemampuan & Dimensi | Git Standar | Local History VS Code | Checkpoint Cursor Composer | Aider CLI (`/undo`) | **Agent-Checkpoint v2.0** |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Rollback Selektif Per-File** | ❌ (Membatalkan seluruh file uncommitted) | ⚠️ (Harus klik mouse manual satu per satu di UI) | ❌ (Me-revert seluruh turn composer sekaligus) | ❌ (Me-revert seluruh commit git sekaligus) | **✅ Ya (1 file pulih, file lain tetap aman)** |
+| **Otonomi & Pemahaman AI** | ❌ (AI boros ribuan token membaca git diff) | ❌ (Riwayat pasif; AI tidak bisa membaca indexnya) | ⚠️ (Tertutup internal Cursor; tak terbaca prompt) | ⚠️ (Membaca ulang log commit terminal) | **✅ Ya (Sharded manifest < 40 token)** |
+| **Portabilitas Lintas Aplikasi** | ✅ Ya | ❌ (Hanya untuk VS Code) | ❌ (Hanya untuk Cursor Composer) | ❌ (Hanya untuk Aider CLI) | **✅ Universal (Cursor, Claude, Cline, Antigravity, Windsurf)** |
+| **Kebersihan Riwayat Git** | ❌ (Mengotori Git dengan 20 commit uji coba WIP) | ✅ Ya | ✅ Ya | ❌ (Otomatis membuat commit Git di tiap prompt) | **✅ 100% Bersih (Cache `.snapshots/` lokal)** |
+| **Kemudahan (Zero-Binary)** | ❌ (Wajib pasang CLI `git`) | ❌ (Tergantung engine IDE) | ❌ (Terkunci di IDE proprietary) | ❌ (Wajib instal paket Python Aider) | **✅ Cukup 1 file markdown rules mandiri** |
 
 ---
 

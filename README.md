@@ -349,11 +349,12 @@ my-project/
 
 ---
 
-## ⚖️ Agent-Checkpoint vs Git: Micro vs Macro Safety
+## ⚖️ Agent-Checkpoint vs Git & Other Alternatives
 
+### 1. Git vs Agent-Checkpoint: Micro vs Macro Safety
 A common question is: *"Why not just rely on Git commits?"* 
 
-Git is built for **macro-safety** across milestones, while Agent-Checkpoint provides **micro-safety** between individual AI prompts before you are ready to commit:
+Git is built for **macro-safety** across human milestones, while Agent-Checkpoint provides **micro-safety** between individual AI prompts before you are ready to commit:
 
 | Feature & Scenario | Standard Git Workflow | Agent-Checkpoint v2.0 Turbo |
 | :--- | :--- | :--- |
@@ -364,6 +365,18 @@ Git is built for **macro-safety** across milestones, while Agent-Checkpoint prov
 | **Tooling & Setup** | Requires local Git CLI setup and clean tree discipline. | Zero install: drop a single rules file into your project root. |
 
 > 💡 **Key Takeaway:** Git protects your project from human mistakes across commits. Agent-Checkpoint protects your working tree from AI hallucinations between prompts.
+
+---
+
+### 2. Why Not Other Existing Alternatives?
+
+| Capability & Dimension | Standard Git | VS Code Local History | Cursor Composer Checkpoints | Aider CLI (`/undo`) | **Agent-Checkpoint v2.0** |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Granular Single-File Rollback** | ❌ (Blunt checkout of all uncommitted files) | ⚠️ (Requires manual mouse clicks in UI) | ❌ (Reverts entire multi-file turn) | ❌ (Reverts entire git commit) | **✅ Yes (Single file restored, others preserved)** |
+| **Autonomous AI Awareness** | ❌ (Agent burns 1,000+ tokens on git diffs) | ❌ (Passive history; agent cannot query it) | ⚠️ (Cursor-internal only; unreadable by prompts) | ⚠️ (Re-reads git log output) | **✅ Yes (Sharded manifest < 40 tokens)** |
+| **Universal Portability** | ✅ Yes | ❌ (VS Code only) | ❌ (Cursor Composer only) | ❌ (Aider CLI only) | **✅ Universal (Cursor, Claude, Cline, Antigravity, Windsurf)** |
+| **Zero Git Tree Pollution** | ❌ (Pollutes history with 20 WIP test commits) | ✅ Yes | ✅ Yes | ❌ (Creates a git commit on every prompt) | **✅ 100% Clean (Local `.snapshots/` cache)** |
+| **Zero-Binary Setup** | ❌ (Requires `git` CLI) | ❌ (Tied to IDE core) | ❌ (Tied to proprietary IDE) | ❌ (Requires Python package install) | **✅ Drop-in single markdown rules file** |
 
 ---
 
